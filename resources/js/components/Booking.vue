@@ -6,10 +6,8 @@
                     <!-- start page title -->
                     <div class="row">
                         <div class="col-12">
-                            <div
-                                class="page-title-box d-sm-flex align-items-center " style="padding-left:41rem"
-                            >
-                                <h4 class="mb-sm-0">Book Meeting</h4>
+                            <div class="page-title-box">
+                                <h4 class="mb-sm-0 text-center">Book Meeting</h4>
                             </div>
                         </div>
                     </div>
@@ -317,29 +315,30 @@ export default {
             calendarOptions: {
                 plugins: [dayGridPlugin, interactionPlugin,timeGridPlugin],
                 initialView: "dayGridMonth",
+                titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
                 weekends: false,
                 events: this.meetings,
                 dateClick: this.handleDateClick,
                 eventClassNames: this.getEventClassNames,
-               views: {
-                dayGrid: {
-                    // Options apply to dayGridPlugin only
-                    eventDisplay: "block", // Show events as blocks in day grid view
+                views: {
+                    dayGrid: {
+                        // Options apply to dayGridPlugin only
+                        eventDisplay: "block", // Show events as blocks in day grid view
+                    },
+                    week: {
+                        // Options apply to the week view
+                        columnHeaderFormat: { weekday: 'long' }, // Display full weekday names in the header
+                    },
+                    day: {
+                        // Options apply to the day view
+                        columnHeader: true, // Hide column headers in day view
+                    },
                 },
-                week: {
-                    // Options apply to the week view
-                    columnHeaderFormat: { weekday: 'long' }, // Display full weekday names in the header
+                headerToolbar: {
+                    left: 'today prev next', // Add custom button
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,timeGridDay', // Allow switching between different views
                 },
-                day: {
-                    // Options apply to the day view
-                    columnHeader: true, // Hide column headers in day view
-                },
-            },
-            headerToolbar: {
-                left: 'prev,next',
-                center: 'title',
-                right: 'dayGridMonth,dayGridWeek,timeGridDay', // Allow switching between different views
-            },
             },
             fetchMeetingData: this.fetchMeetingData.bind(this),
         };

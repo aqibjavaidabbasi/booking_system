@@ -20783,6 +20783,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       calendarOptions: {
         plugins: [_fullcalendar_daygrid__WEBPACK_IMPORTED_MODULE_3__["default"], _fullcalendar_interaction__WEBPACK_IMPORTED_MODULE_4__["default"], _fullcalendar_timegrid__WEBPACK_IMPORTED_MODULE_5__["default"]],
         initialView: "dayGridMonth",
+        titleFormat: {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        },
         weekends: false,
         events: this.meetings,
         dateClick: this.handleDateClick,
@@ -20804,7 +20809,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           }
         },
         headerToolbar: {
-          left: 'prev,next',
+          left: 'today prev next',
+          // Add custom button
           center: 'title',
           right: 'dayGridMonth,dayGridWeek,timeGridDay' // Allow switching between different views
         }
@@ -21069,7 +21075,7 @@ var _hoisted_3 = {
 var _hoisted_4 = {
   "class": "container-fluid"
 };
-var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"row\"><div class=\"col-12\"><div class=\"page-title-box d-sm-flex align-items-center\" style=\"padding-left:41rem;\"><h4 class=\"mb-sm-0\">Book Meeting</h4></div></div></div><div style=\"position:fixed;bottom:20px;right:20px;z-index:9999;\"><div class=\"btn btn-primary position-relative\" style=\"background-color:gray;border-radius:50%;width:50px;height:50px;display:flex;justify-content:center;align-items:center;\"><button type=\"button\" class=\"btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode\" style=\"border-radius:50%;width:80%;height:80%;\"><i class=\"bx bx-moon fs-22\"></i></button></div></div>", 2);
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"row\"><div class=\"col-12\"><div class=\"page-title-box\"><h4 class=\"mb-sm-0 text-center\">Book Meeting</h4></div></div></div><div style=\"position:fixed;bottom:20px;right:20px;z-index:9999;\"><div class=\"btn btn-primary position-relative\" style=\"background-color:gray;border-radius:50%;width:50px;height:50px;display:flex;justify-content:center;align-items:center;\"><button type=\"button\" class=\"btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode\" style=\"border-radius:50%;width:80%;height:80%;\"><i class=\"bx bx-moon fs-22\"></i></button></div></div>", 2);
 var _hoisted_7 = {
   "class": "modal-dialog"
 };
@@ -21368,33 +21374,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 var _hoisted_1 = {
-  id: "app"
+  id: "login",
+  "class": "bg-dark"
 };
 var _hoisted_2 = {
-  id: "login"
-};
-var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-  id: "description"
-}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "Enter Access Code"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Enter the unique meeting room access code."), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, " Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. ")], -1 /* HOISTED */);
-var _hoisted_4 = {
   id: "form"
 };
-var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-  "for": "access_code"
-}, "Access Code", -1 /* HOISTED */);
-var _hoisted_6 = {
+var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
+  "class": "text-center mb-4"
+}, "Enter Access Code", -1 /* HOISTED */);
+var _hoisted_4 = {
   style: {
     "color": "red"
   }
 };
-var _hoisted_7 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
   type: "submit",
   "class": "btn btn-outline-light"
 }, "Submit", -1 /* HOISTED */);
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("form", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("form", {
     onSubmit: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)($setup.checkAccessCode, ["prevent"])
-  }, [_hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     "class": "form-control form-control-lg",
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
       return $setup.accessCode = $event;
@@ -21402,10 +21403,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     type: "text",
     id: "access_code",
     autocomplete: "off",
+    placeholder: "Access Code",
     style: {
       "background-color": "white"
     }
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.accessCode]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_6, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errorMessage), 1 /* TEXT */), _hoisted_7], 32 /* NEED_HYDRATION */)])])]);
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.accessCode]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errorMessage), 1 /* TEXT */), _hoisted_5], 32 /* NEED_HYDRATION */)])]);
 }
 
 /***/ }),
@@ -21534,7 +21536,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n* {\n  box-sizing: border-box;\n  font-family: Verdana, sans-serif;\n}\nhtml,\nbody {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  width: 100%;\n}\ndiv#app {\n  width: 100%;\n  height: 100%;\n}\ndiv#app div#login {\n  align-items: center;\n  background-color: #e2e2e5;\n  display: flex;\n  justify-content: center;\n  width: 100%;\n  height: 100%;\n}\ndiv#app div#login div#description {\n  background-color: #ffffff;\n  width: 24rem;\n  height: 16rem;\n  padding: 35px;\n}\ndiv#app div#login div#description h1,\ndiv#app div#login div#description p {\n  margin: 0;\n}\ndiv#app div#login div#description p {\n  font-size: 0.8em;\n  color: #95a5a6;\n  margin-top: 10px;\n}\ndiv#app div#login div#form {\n  background-color: #34495e;\n  border-radius: 5px;\n  box-shadow: 0px 0px 30px 0px #666;\n  color: #ecf0f1;\n  width: 34rem;\n  height: 18rem;\n  padding: 4rem;\n}\ndiv#app div#login div#form label,\ndiv#app div#login div#form input {\n  outline: none;\n  width: 100%;\n}\ndiv#app div#login div#form label {\n  color: #95a5a6;\n  font-size: large;\n}\ndiv#app div#login div#form input {\n  background-color: transparent;\n  border: none;\n  color: rgb(10, 10, 10);\n  font-size: 1.7em;\n  margin-bottom: 20px;\n}\ndiv#app div#login div#form ::-moz-placeholder {\n  color: rgb(3, 3, 3);\n  opacity: 1;\n}\ndiv#app div#login div#form ::placeholder {\n  color: rgb(3, 3, 3);\n  opacity: 1;\n}\ndiv#app div#login div#form button {\n  font-size: 1.7em;\n  margin-bottom: 20px;\n  width: 26.2rem;\n}\n@media screen and (max-width: 600px) {\ndiv#app div#login {\n    align-items: unset;\n    background-color: unset;\n    display: unset;\n    justify-content: unset;\n}\ndiv#app div#login div#description {\n    margin: 0 auto;\n    max-width: 350px;\n    width: 100%;\n}\ndiv#app div#login div#form {\n    border-radius: unset;\n    box-shadow: unset;\n    width: 100%;\n}\ndiv#app div#login div#form form {\n    margin: 0 auto;\n    max-width: 280px;\n    width: 100%;\n}\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n* {\n  box-sizing: border-box;\n  font-family: Verdana, sans-serif;\n}\nhtml,\nbody {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  width: 100%;\n}\ndiv#app {\n  width: 100%;\n  height: 100%;\n}\ndiv#app div#login {\n  align-items: center;\n  background-color: #2b4157!important;\n  display: flex;\n  justify-content: center;\n  width: 100%;\n  height: 100%;\n}\ndiv#app div#login div#description {\n  background-color: #2b4157!important;\n  width: 24rem;\n  height: 16rem;\n  padding: 35px;\n}\ndiv#app div#login div#description h1,\ndiv#app div#login div#description p {\n  margin: 0;\n}\ndiv#app div#login div#description p {\n  font-size: 0.8em;\n  color: #95a5a6;\n  margin-top: 10px;\n}\ndiv#app div#login div#form {\n  background-color: #34495e;\n  border-radius: 5px;\n  /* box-shadow: 0px 0px 30px 0px #666; */\n  border: 1px solid #2c3e50;\n  color: #ecf0f1;\n  width: 34rem;\n  height: 18rem;\n  padding: 4rem;\n}\ndiv#app div#login div#form label,\ndiv#app div#login div#form input {\n  outline: none;\n  width: 100%;\n}\ndiv#app div#login div#form label {\n  color: #95a5a6;\n  font-size: large;\n}\ndiv#app div#login div#form input {\n  background-color: #2c3e50!important;\n  border: none;\n  color: #ecf0f1;\n  font-size: 1.7em;\n  margin-bottom: 20px;\n  border: 1px solid #95a5a6;\n}\ndiv#app div#login div#form ::-moz-placeholder {\n  color: #95a5a6;\n  opacity: 1;\n}\ndiv#app div#login div#form ::placeholder {\n  color: #95a5a6;\n  opacity: 1;\n}\ndiv#app div#login div#form button {\n  font-size: 1.7em;\n  margin-bottom: 20px;\n  width: 26.2rem;\n  border: 1px solid #95a5a6;\n}\n@media screen and (max-width: 600px) {\ndiv#app div#login {\n    align-items: unset;\n    background-color: unset;\n    display: unset;\n    justify-content: unset;\n}\ndiv#app div#login div#description {\n    margin: 0 auto;\n    max-width: 350px;\n    width: 100%;\n}\ndiv#app div#login div#form {\n    border-radius: unset;\n    box-shadow: unset;\n    width: 100%;\n}\ndiv#app div#login div#form form {\n    margin: 0 auto;\n    max-width: 280px;\n    width: 100%;\n}\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
