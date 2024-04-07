@@ -161,24 +161,29 @@ class MeetingRoomController extends Controller
 
 
         $accesstoken = '';
-        if($token != null)
-        {
-            // chjeck an dverify the token .
-            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
+                if($token != null)
+                {
+                // chjeck an dverify the token .
+                $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
 
-            if($user)
-            {
+                if($user)
+                {
+                // dd("if call");
                 // get the access code from token
-                $accesstoken =  $user->BookingMeeting->MeetingRoom->access_code;
-            }else if($token == 'undefined'){
+                $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
+                session()->put('AccessCode', $accesstoken);
+                }else if($token == 'undefined'){
+
                 $accesstoken = session()->get('AccessCode');
-                // return response()->json(['valid' => false], 422);
-            }
-        }else{
-            // this cosde assign from seeder
-            // $accesstoken = '645722';
-           $accesstoken = session()->get('AccessCode');
-        }
+                dd($accesstoken);
+                }
+                }else{
+                dd("skwat else call");
+                // this cosde assign from seeder
+                // $accesstoken = '645722';
+                $accesstoken = session()->get('AccessCode');
+                }
+                // dd("tol bari call");
         // $meetingRoom = MeetingRoom::where('access_code', session::get('access_code'))->first();
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
@@ -214,15 +219,11 @@ class MeetingRoomController extends Controller
         return response()->json(['valid' => false], 422);
         }
     }
-    public function getData()
-    {
-
-    }
     // storeBooking
     public function storeBooking(Request $request)
     {
 
-        // dd($request->all());
+
         $user = new User();
             $user->name  =   $request->input('name');
             // $user->email =  $request->input('email');
@@ -230,7 +231,8 @@ class MeetingRoomController extends Controller
         // new meeting booking
         $booking = new BookingMeeting();
         // $meetingRoom = MeetingRoom::where('access_code', session::get('access_code'))->first();
-        $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code', '462890')->first();
+        $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code', session()->get('AccessCode'))->first();
+
         $booking->meeting_room_id = $meetingRoom->id;
         $booking->user_id = $user->id;
 
