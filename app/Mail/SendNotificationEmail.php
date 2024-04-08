@@ -14,6 +14,7 @@ class SendNotificationEmail extends Mailable
     use Queueable, SerializesModels;
 
         public $user;
+        public $status;
 
         /**
         * Create a new message instance.
@@ -22,9 +23,10 @@ class SendNotificationEmail extends Mailable
         * @param \App\Models\BookingMeeting $booking
         * @return void
         */
-        public function __construct($user)
+        public function __construct($user,$status)
         {
             $this->user = $user;
+            $this->status = $status;
         }
 
         public function build()

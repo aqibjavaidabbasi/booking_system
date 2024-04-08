@@ -13,10 +13,7 @@
     <p>Your status details:</p>
     <ul>
         <li><strong>
-                @if ($user->auth_code != null)
-                    Approved
-                @else
-                @endif
+                {{ $status }}
 
             </strong> your code is: {{ $user->auth_code }}</li>
 
