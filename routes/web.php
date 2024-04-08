@@ -41,7 +41,7 @@ Route::group(
     ['prefix' => "/dashboard/", "middleware" => ["auth", 'verified']],
     function () {
         Route::get('', [HomeController::class, 'index'])->name('dashboard');
-        Route::get('user/change-status/{id}/{slug}',[UserController::class,'update_status'])->name('user-booking-status');
+
         Route::get('user/destroy/{id}',[UserController::class,'destroy'])->name('user-destroy');
 
         // meeting rooms
@@ -55,6 +55,8 @@ Route::group(
        Route::post('/meetingsroom/store-emails/{id}', [AddNotificationEmailController::class,
        'notification_emails'])->name('meetingrooms.notification_emails');
 
+    // approved status of meeting
+    Route::get('user/change-status/{id}/{slug}',[BookingMeetingController::class,'update_status'])->name('user-booking-status');
 
         // meeting AvailabilitySlotController
         Route::resource('availibilities',AvailabilitySlotController::class);

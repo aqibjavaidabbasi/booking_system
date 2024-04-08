@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
 use App\Mail\BookingConfirmation;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\SendNotificationEmail;
 class MeetingRoomController extends Controller
 {
     /**
@@ -161,30 +162,18 @@ class MeetingRoomController extends Controller
 
 
         $accesstoken = '';
-                if($token != null)
-                {
-                // chjeck an dverify the token .
-                $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
+        if ($token != null) {
+            // chjeck an dverify the token .
+            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
 
-                if($user)
-                {
-                // dd("if call");
-                // get the access code from token
+            if ($user) {
                 $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
                 session()->put('AccessCode', $accesstoken);
-                }else if($token == 'undefined'){
+            } else if ($token == 'undefined') {
 
                 $accesstoken = session()->get('AccessCode');
-                dd($accesstoken);
-                }
-                }else{
-                dd("skwat else call");
-                // this cosde assign from seeder
-                // $accesstoken = '645722';
-                $accesstoken = session()->get('AccessCode');
-                }
-                // dd("tol bari call");
-        // $meetingRoom = MeetingRoom::where('access_code', session::get('access_code'))->first();
+            }
+        }
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
             $color = '';

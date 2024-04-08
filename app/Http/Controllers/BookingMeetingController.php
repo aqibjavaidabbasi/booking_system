@@ -3,8 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingMeeting;
+use App\Models\MeetingRoom;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
+use App\Mail\BookingConfirmation;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendNotificationEmail;
 class BookingMeetingController extends Controller
 {
     /**
@@ -17,45 +25,35 @@ class BookingMeetingController extends Controller
             return view("admin/booking.index", compact("bookings"));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // update status
+        public function update_status($id,$slug)
+        {
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+            $booking = BookingMeeting::where('id',$id)->first();
+            $user = User::where('id',$booking->user_id)->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(BookingMeeting $bookingMeeting)
-    {
-        //
-    }
+            if ($booking->status == 'Pending')
+            {
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BookingMeeting $bookingMeeting)
-    {
-        //
-    }
+                $user = User::where('id',$booking->user_id)->first();
+                $user->status = true;
+                $user->auth_code = str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
+            // update status
+                $booking->status = 'Approved';
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, BookingMeeting $bookingMeeting)
-    {
-        //
-    }
+            }else if($booking->status == 'Reject')
+            {
+
+                $user->status = false;
+                $booking->status == 'Reject';
+            }
+
+            $user->save();
+            $booking->save();
+            // send here dynamic code with email
+            Mail::to($user->email)->send(new SendNotificationEmail($user,$booking->status));
+            return redirect()->back();
+        }
 
     /**
      * Remove the specified resource from storage.
