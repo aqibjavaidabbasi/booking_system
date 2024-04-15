@@ -25,35 +25,35 @@ class BookingMeetingController extends Controller
             return view("admin/booking.index", compact("bookings"));
     }
 
-        // update status
-        public function update_status($id,$slug)
+    // update status
+    public function update_status($id,$slug)
+    {
+
+        $booking = BookingMeeting::where('id',$id)->first();
+        $user = User::where('id',$booking->user_id)->first();
+
+        if ($booking->status == 'Pending')
         {
 
-            $booking = BookingMeeting::where('id',$id)->first();
             $user = User::where('id',$booking->user_id)->first();
+            $user->status = true;
+            $user->auth_code = str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
+        // update status
+            $booking->status = 'Approved';
 
-            if ($booking->status == 'Pending')
-            {
+        }else if($booking->status == 'Reject')
+        {
 
-                $user = User::where('id',$booking->user_id)->first();
-                $user->status = true;
-                $user->auth_code = str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
-            // update status
-                $booking->status = 'Approved';
-
-            }else if($booking->status == 'Reject')
-            {
-
-                $user->status = false;
-                $booking->status == 'Reject';
-            }
-
-            $user->save();
-            $booking->save();
-            // send here dynamic code with email
-            Mail::to($user->email)->send(new SendNotificationEmail($user,$booking->status));
-            return redirect()->back();
+            $user->status = false;
+            $booking->status == 'Reject';
         }
+
+        $user->save();
+        $booking->save();
+        // send here dynamic code with email
+        Mail::to($user->email)->send(new SendNotificationEmail($user,$booking->status));
+        return redirect()->back();
+    }
 
     /**
      * Remove the specified resource from storage.

@@ -118,9 +118,9 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
                                                 </div>
-                                                <div class="alert alert-success  rounded-0 mb-0">
+                                                {{-- <div class="alert alert-success  rounded-0 mb-0">
                                                     <p class="mb-0">Enter Emails comma separated</p>
-                                                </div>
+                                                </div> --}}
                                                 <div class="modal-body">
                                                     <form
                                                         action="{{ route('meetingrooms.notification_emails', $room->id) }}"
@@ -128,7 +128,8 @@
                                                         @method('POST')
                                                         @csrf
                                                         <div class="mb-3">
-                                                            <label for="email" class="form-label">Email</label>
+                                                            <label for="email" class="form-label">Enter Emails (comma
+                                                                separated)</label>
                                                             <textarea type="text" name="email" class="form-control" id="email" placeholder="Enter your name"
                                                                 value="">
 @foreach ($room->AddNotificationEmail as $key => $notifyemail)

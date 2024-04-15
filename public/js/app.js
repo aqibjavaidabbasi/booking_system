@@ -20779,6 +20779,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         endTime: ''
       },
       // end formdata
+      originalEvents: [],
+      // Store the original event data
+      modifiedEvents: [],
+      // Store the modified event data (with time discarded)
       meetings: [],
       calendarOptions: {
         plugins: [_fullcalendar_daygrid__WEBPACK_IMPORTED_MODULE_3__["default"], _fullcalendar_interaction__WEBPACK_IMPORTED_MODULE_4__["default"], _fullcalendar_timegrid__WEBPACK_IMPORTED_MODULE_5__["default"]],
@@ -20789,9 +20793,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           day: 'numeric'
         },
         weekends: false,
-        events: this.meetings,
+        events: [],
         dateClick: this.handleDateClick,
         eventClassNames: this.getEventClassNames,
+        eventContent: this.renderEventContent,
         views: {
           dayGrid: {
             // Options apply to dayGridPlugin only
@@ -20799,13 +20804,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           },
           week: {
             // Options apply to the week view
-            columnHeaderFormat: {
-              weekday: 'long'
-            } // Display full weekday names in the header
+            // columnHeaderFormat: { weekday: 'long' }, // Remove this line
           },
-          day: {
-            // Options apply to the day view
-            columnHeader: true // Hide column headers in day view
+          timeGrid: {
+            // Options apply to the timeGrid views (timeGridWeek and timeGridDay)
+            // columnHeader: true, // Remove this line
+            // columnHeaderFormat: { weekday: 'long' }, // Remove this line
           }
         },
         headerToolbar: {
@@ -20855,56 +20859,70 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var _arguments = arguments,
         _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, _response;
+        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
               token = _arguments.length > 0 && _arguments[0] !== undefined ? _arguments[0] : null;
-              //    try {
-              urlParts = window.location.pathname.split('/'); // console.log('urlParts:', urlParts);
+              _context.prev = 1;
+              urlParts = window.location.pathname.split('/');
               tokenIndex = urlParts.indexOf('booking') + 1;
-              tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null; // Log the token if it exists in the URL
-              // console.log('Token from URL:', tokenFromUrl);
-              // Make API call with or without token based on its existence
+              tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null;
               apiUrl = "/api/get-meetings-data";
               if (!(tokenFromUrl !== null)) {
-                _context.next = 13;
+                _context.next = 17;
                 break;
               }
               apiUrl += "/".concat(tokenFromUrl);
-              _context.next = 9;
+              _context.next = 10;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().get(apiUrl);
-            case 9:
-              _response = _context.sent;
-              _this.calendarOptions.events = _response.data;
-              _context.next = 14;
+            case 10:
+              response = _context.sent;
+              // Process original event data
+              _this.originalEvents = response.data;
+
+              // Process modified event data (with time discarded)
+              _this.modifiedEvents = response.data.map(function (event) {
+                return {
+                  start: event.start.substring(0, 10),
+                  end: event.end.substring(0, 10),
+                  'title': event.title,
+                  color: event.color || '#378006'
+                };
+              });
+              console.log('hehehe', _this.modifiedEvents);
+
+              // Set default events to modifiedEvents
+              _this.calendarOptions.events = _this.modifiedEvents;
+              _context.next = 18;
               break;
-            case 13:
+            case 17:
               console.log('Token does not exist in the URL');
-            case 14:
-              // const response = await axios.get(apiUrl);
-              _this.calendarOptions.events = response.data;
-              // Handle the response accordingly
-
-              //    } catch (error) {
-
-              //        let apiUrl = "/api/get-meetings-data";
-              //         const response = await axios.get(apiUrl);
-              //         this.calendarOptions.events = response.data;
-              //         console.log("Error fetching meeting data:", error);
-              //     }
-            case 15:
+            case 18:
+              _context.next = 23;
+              break;
+            case 20:
+              _context.prev = 20;
+              _context.t0 = _context["catch"](1);
+              console.error('Error fetching meeting data:', _context.t0);
+            case 23:
             case "end":
               return _context.stop();
           }
-        }, _callee);
+        }, _callee, null, [[1, 20]]);
       }))();
+    },
+    renderEventContent: function renderEventContent(eventInfo) {
+      // Create a custom event content layout
+      return {
+        html: "\n                <div style=\"display: flex; align-items: center;color:var(--vz-heading-color)\">\n                    <span style=\"height: 10px; width: 10px; border-radius: 5px; display: inline-block; margin-right: 5px;background-color: ".concat(eventInfo.event.backgroundColor, "\"></span>\n                    ").concat(eventInfo.event.title, "\n                </div>\n                ")
+      };
     },
     //
     submitbooking: function submitbooking() {
       var _this2 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-        var _response2;
+        var response;
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
@@ -20912,8 +20930,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               _context2.next = 3;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/store-booking", _this2.formData);
             case 3:
-              _response2 = _context2.sent;
-              console.log(_response2.data.valid);
+              response = _context2.sent;
+              console.log(response.data.valid);
               _this2.eventmodal = false;
               _this2.fetchMeetingData();
               _context2.next = 14;
@@ -20933,7 +20951,35 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }
   },
   mounted: function mounted() {
+    var _this3 = this;
     this.fetchMeetingData(); // Call fetchMeetingData directly
+    var prevButton = document.querySelector('.fc-prev-button');
+    var nextButton = document.querySelector('.fc-next-button');
+    var todayButton = document.querySelector('.fc-today-button');
+    var dayGridMonthButton = document.querySelector('.fc-dayGridMonth-button');
+    var dayGridWeekButton = document.querySelector('.fc-dayGridWeek-button');
+    var timeGridDayButton = document.querySelector('.fc-timeGridDay-button');
+    prevButton.addEventListener('click', function () {
+      // console.log('Clicked on Previous button');
+    });
+    nextButton.addEventListener('click', function () {
+      // console.log('Clicked on Next button');
+    });
+    todayButton.addEventListener('click', function () {
+      // console.log('Clicked on Today button');
+    });
+    dayGridMonthButton.addEventListener('click', function () {
+      _this3.calendarOptions.events = _this3.modifiedEvents;
+      // console.log('Clicked on Day Grid Month button');
+    });
+    dayGridWeekButton.addEventListener('click', function () {
+      _this3.calendarOptions.events = _this3.modifiedEvents;
+      // console.log('Clicked on Day Grid Week button');
+    });
+    timeGridDayButton.addEventListener('click', function () {
+      _this3.calendarOptions.events = _this3.originalEvents;
+      // console.log('Clicked on Time Grid Day button',this.originalEvents);
+    });
   }
 });
 
@@ -21553,6 +21599,30 @@ var routes = [{
   history: (0,vue_router__WEBPACK_IMPORTED_MODULE_2__.createWebHistory)(),
   routes: routes
 }));
+
+/***/ }),
+
+/***/ "./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/laravel-mix/node_modules/css-loader/dist/runtime/api.js */ "./node_modules/laravel-mix/node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "\n.fc-h-event .fc-event-title {\n\n    max-width: 70% !important;\n}\n.fc-scrollgrid-sync-table{\n    height: 200px!important;\n}\n.fc-scrollgrid-sync-table td{\n    height: 200px!important;\n}\n.fc-event-title, .fc-event-title-container {\n    background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n.fc-h-event{\n        background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
 
 /***/ }),
 
@@ -43853,6 +43923,36 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css":
+/*!*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_laravel_mix_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Booking_vue_vue_type_style_index_0_id_28bb4584_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../node_modules/vue-loader/dist/stylePostLoader.js!../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css */ "./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_laravel_mix_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Booking_vue_vue_type_style_index_0_id_28bb4584_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_laravel_mix_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Booking_vue_vue_type_style_index_0_id_28bb4584_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Login.vue?vue&type=style&index=0&id=6bdc8b8e&lang=css":
 /*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Login.vue?vue&type=style&index=0&id=6bdc8b8e&lang=css ***!
@@ -44223,13 +44323,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Booking_vue_vue_type_template_id_28bb4584__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Booking.vue?vue&type=template&id=28bb4584 */ "./resources/js/components/Booking.vue?vue&type=template&id=28bb4584");
 /* harmony import */ var _Booking_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Booking.vue?vue&type=script&lang=js */ "./resources/js/components/Booking.vue?vue&type=script&lang=js");
-/* harmony import */ var _node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _Booking_vue_vue_type_style_index_0_id_28bb4584_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css */ "./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css");
+/* harmony import */ var _node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Booking_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Booking_vue_vue_type_template_id_28bb4584__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Booking.vue"]])
+
+
+const __exports__ = /*#__PURE__*/(0,_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Booking_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Booking_vue_vue_type_template_id_28bb4584__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Booking.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -44345,6 +44448,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   render: () => (/* reexport safe */ _node_modules_laravel_mix_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Login_vue_vue_type_template_id_6bdc8b8e__WEBPACK_IMPORTED_MODULE_0__.render)
 /* harmony export */ });
 /* harmony import */ var _node_modules_laravel_mix_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Login_vue_vue_type_template_id_6bdc8b8e__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/laravel-mix/node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Login.vue?vue&type=template&id=6bdc8b8e */ "./node_modules/laravel-mix/node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Login.vue?vue&type=template&id=6bdc8b8e");
+
+
+/***/ }),
+
+/***/ "./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css":
+/*!*****************************************************************************************!*\
+  !*** ./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css ***!
+  \*****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_laravel_mix_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Booking_vue_vue_type_style_index_0_id_28bb4584_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader/dist/cjs.js!../../../node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../node_modules/vue-loader/dist/stylePostLoader.js!../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/laravel-mix/node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/Booking.vue?vue&type=style&index=0&id=28bb4584&lang=css");
 
 
 /***/ }),
