@@ -41,7 +41,7 @@
                                     height: 80%;
                                 "
                             >
-                                <i class="bx bx-moon fs-22"></i>
+                                <i class="bx bx-moon fs-22 py-2 px-2"></i>
                             </button>
                         </div>
                     </div>
@@ -405,7 +405,6 @@ export default {
                         'title':event.title,
                         color: event.color || '#378006',
                     }));
-                    console.log('hehehe',this.modifiedEvents)
 
                     // Set default events to modifiedEvents
                     this.calendarOptions.events = this.modifiedEvents;
@@ -500,6 +499,6 @@ export default {
 }
 .fc-h-event{
         background: none !important; /* Use !important to override any existing styles */
-    color: --vz-heading-color; /* Change color as needed */
+    color: var(--vz-heading-color); /* Change color as needed */
 }
 </style>

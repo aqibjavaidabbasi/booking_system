@@ -56,51 +56,6 @@
             /* Set the color of the scrollbar handle on hover */
         }
     </style>
-    {{-- second style --}}
-    {{-- <style>
-        /* For WebKit-based browsers */
-
-         ::-webkit-scrollbar {
-            width: 10px;
-            /* Set the width of the scrollbar */
-        }
-        /* Track */
-
-         ::-webkit-scrollbar-track {
-            background: transparent;
-            /* Set the background color of the scrollbar track */
-        }
-        /* Handle */
-
-         ::-webkit-scrollbar-thumb {
-            background: black;
-            /* Set the color of the scrollbar handle */
-            border-radius: 5px;
-            /* Set the border radius of the scrollbar handle */
-        }
-        /* Handle on hover */
-
-         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.7);
-            /* Set the color of the scrollbar handle on hover */
-        }
-        /* Media query for light mode */
-
-        @media (prefers-color-scheme: light) {
-            /* Set scrollbar color to black */
-             ::-webkit-scrollbar-thumb {
-                background: black;
-            }
-        }
-        /* Media query for dark mode */
-
-        @media (prefers-color-scheme: dark) {
-            /* Set scrollbar color to transparent */
-             ::-webkit-scrollbar-thumb {
-                background: transparent;
-            }
-        }
-    </style> --}}
 
 </head>
 
