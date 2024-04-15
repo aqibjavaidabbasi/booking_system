@@ -20870,7 +20870,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null;
               apiUrl = "/api/get-meetings-data";
               if (!(tokenFromUrl !== null)) {
-                _context.next = 17;
+                _context.next = 16;
                 break;
               }
               apiUrl += "/".concat(tokenFromUrl);
@@ -20890,26 +20890,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   color: event.color || '#378006'
                 };
               });
-              console.log('hehehe', _this.modifiedEvents);
 
               // Set default events to modifiedEvents
               _this.calendarOptions.events = _this.modifiedEvents;
-              _context.next = 18;
+              _context.next = 17;
               break;
-            case 17:
+            case 16:
               console.log('Token does not exist in the URL');
-            case 18:
-              _context.next = 23;
+            case 17:
+              _context.next = 22;
               break;
-            case 20:
-              _context.prev = 20;
+            case 19:
+              _context.prev = 19;
               _context.t0 = _context["catch"](1);
               console.error('Error fetching meeting data:', _context.t0);
-            case 23:
+            case 22:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[1, 20]]);
+        }, _callee, null, [[1, 19]]);
       }))();
     },
     renderEventContent: function renderEventContent(eventInfo) {
@@ -21121,7 +21120,7 @@ var _hoisted_3 = {
 var _hoisted_4 = {
   "class": "container-fluid"
 };
-var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"row\"><div class=\"col-12\"><div class=\"page-title-box\"><h4 class=\"mb-sm-0 text-center\">Book Meeting</h4></div></div></div><div style=\"position:fixed;bottom:20px;right:20px;z-index:9999;\"><div class=\"btn btn-primary position-relative\" style=\"background-color:gray;border-radius:50%;width:50px;height:50px;display:flex;justify-content:center;align-items:center;\"><button type=\"button\" class=\"btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode\" style=\"border-radius:50%;width:80%;height:80%;\"><i class=\"bx bx-moon fs-22\"></i></button></div></div>", 2);
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"row\"><div class=\"col-12\"><div class=\"page-title-box\"><h4 class=\"mb-sm-0 text-center\">Book Meeting</h4></div></div></div><div style=\"position:fixed;bottom:20px;right:20px;z-index:9999;\"><div class=\"btn btn-primary position-relative\" style=\"background-color:gray;border-radius:50%;width:50px;height:50px;display:flex;justify-content:center;align-items:center;\"><button type=\"button\" class=\"btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode\" style=\"border-radius:50%;width:80%;height:80%;\"><i class=\"bx bx-moon fs-22 py-2 px-2\"></i></button></div></div>", 2);
 var _hoisted_7 = {
   "class": "modal-dialog"
 };
@@ -21619,7 +21618,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.fc-h-event .fc-event-title {\n\n    max-width: 70% !important;\n}\n.fc-scrollgrid-sync-table{\n    height: 200px!important;\n}\n.fc-scrollgrid-sync-table td{\n    height: 200px!important;\n}\n.fc-event-title, .fc-event-title-container {\n    background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n.fc-h-event{\n        background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.fc-h-event .fc-event-title {\n\n    max-width: 70% !important;\n}\n.fc-scrollgrid-sync-table{\n    height: 200px!important;\n}\n.fc-scrollgrid-sync-table td{\n    height: 200px!important;\n}\n.fc-event-title, .fc-event-title-container {\n    background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n.fc-h-event{\n        background: none !important; /* Use !important to override any existing styles */\n    color: var(--vz-heading-color); /* Change color as needed */\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
