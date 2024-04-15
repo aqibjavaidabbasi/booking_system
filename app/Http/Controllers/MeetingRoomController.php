@@ -174,6 +174,7 @@ class MeetingRoomController extends Controller
                 $accesstoken = session()->get('AccessCode');
             }
         }
+
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
             $color = '';
@@ -191,10 +192,8 @@ class MeetingRoomController extends Controller
                 $color = 'orange';
             }
             return [
-                // 'title' => $meeting->status .': '. Carbon::parse($meeting->start_time)->format('h-m-i') .
-                // ' to ' . Carbon::parse($meeting->end_time)->format('h-m-i'),
-                'title' => $meeting->status .': '. Carbon::parse($meeting->start_time)->format('h:i:s') .
-                ' to ' . Carbon::parse($meeting->end_time)->format('h:i:s'),
+                'title' => $meeting->status . ' (' . Carbon::parse($meeting->start_time)->format('h:i') .
+                ' - ' . Carbon::parse($meeting->end_time)->format('h:i') . ')',
                 "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'), // Format start time in ISO 8601
                 "end" => Carbon::parse($meeting->end_time)->format('Y-m-d\TH:i:s'), // Format end time in ISO 8601
                 'color' => $color,

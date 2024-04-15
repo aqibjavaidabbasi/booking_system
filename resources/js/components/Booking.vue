@@ -311,15 +311,18 @@ export default {
                 endTime: ''
             },
             // end formdata
+            originalEvents: [], // Store the original event data
+            modifiedEvents: [], // Store the modified event data (with time discarded)
             meetings:[],
             calendarOptions: {
-                plugins: [dayGridPlugin, interactionPlugin,timeGridPlugin],
+                plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
                 initialView: "dayGridMonth",
                 titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
                 weekends: false,
-                events: this.meetings,
+                events: [],
                 dateClick: this.handleDateClick,
                 eventClassNames: this.getEventClassNames,
+                eventContent:this.renderEventContent,
                 views: {
                     dayGrid: {
                         // Options apply to dayGridPlugin only
@@ -327,11 +330,12 @@ export default {
                     },
                     week: {
                         // Options apply to the week view
-                        columnHeaderFormat: { weekday: 'long' }, // Display full weekday names in the header
+                        // columnHeaderFormat: { weekday: 'long' }, // Remove this line
                     },
-                    day: {
-                        // Options apply to the day view
-                        columnHeader: true, // Hide column headers in day view
+                    timeGrid: {
+                        // Options apply to the timeGrid views (timeGridWeek and timeGridDay)
+                        // columnHeader: true, // Remove this line
+                        // columnHeaderFormat: { weekday: 'long' }, // Remove this line
                     },
                 },
                 headerToolbar: {
@@ -339,6 +343,7 @@ export default {
                     center: 'title',
                     right: 'dayGridMonth,dayGridWeek,timeGridDay', // Allow switching between different views
                 },
+
             },
             fetchMeetingData: this.fetchMeetingData.bind(this),
         };
@@ -379,45 +384,55 @@ export default {
         clearField(event) {
             event.target.value = "";
         },
-       async fetchMeetingData(token = null) {
-             //    try {
-              const urlParts = window.location.pathname.split('/');
-                // console.log('urlParts:', urlParts);
+        async fetchMeetingData(token = null) {
+            try {
+                const urlParts = window.location.pathname.split('/');
                 const tokenIndex = urlParts.indexOf('booking') + 1;
                 const tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null;
 
-                // Log the token if it exists in the URL
-                // console.log('Token from URL:', tokenFromUrl);
+                let apiUrl = "/api/get-meetings-data";
+                if (tokenFromUrl !== null) {
+                    apiUrl += `/${tokenFromUrl}`;
+                    const response = await axios.get(apiUrl);
 
-                // Make API call with or without token based on its existence
+                    // Process original event data
+                    this.originalEvents = response.data;
 
-                    let apiUrl = "/api/get-meetings-data";
-                    if (tokenFromUrl !== null) {
-                        apiUrl += `/${tokenFromUrl}`;
-                        const response = await axios.get(apiUrl);
-                        this.calendarOptions.events = response.data;
-                    } else {
-                        console.log('Token does not exist in the URL');
-                    }
-                    // const response = await axios.get(apiUrl);
-                    this.calendarOptions.events = response.data;
-                    // Handle the response accordingly
+                    // Process modified event data (with time discarded)
+                    this.modifiedEvents = response.data.map(event => ({
+                        start: event.start.substring(0, 10),
+                        end: event.end.substring(0, 10),
+                        'title':event.title,
+                        color: event.color || '#378006',
+                    }));
+                    console.log('hehehe',this.modifiedEvents)
 
-                //    } catch (error) {
-
-                //        let apiUrl = "/api/get-meetings-data";
-                //         const response = await axios.get(apiUrl);
-                //         this.calendarOptions.events = response.data;
-                //         console.log("Error fetching meeting data:", error);
-                //     }
+                    // Set default events to modifiedEvents
+                    this.calendarOptions.events = this.modifiedEvents;
+                } else {
+                    console.log('Token does not exist in the URL');
+                }
+            } catch (error) {
+                console.error('Error fetching meeting data:', error);
+            }
         },
-
-        //
-         async submitbooking() {
+        renderEventContent(eventInfo) {
+         // Create a custom event content layout
+            return {
+                html: `
+                <div style="display: flex; align-items: center;color:var(--vz-heading-color)">
+                    <span style="height: 10px; width: 10px; border-radius: 5px; display: inline-block; margin-right: 5px;background-color: ${eventInfo.event.backgroundColor}"></span>
+                    ${eventInfo.event.title}
+                </div>
+                `
+            };
+            },
+            //
+            async submitbooking() {
             try {
                 const response = await axios.post("/api/store-booking", this.formData);
                 console.log(response.data.valid);
-                  this.eventmodal = false;
+                    this.eventmodal = false;
                 this.fetchMeetingData();
 
 
@@ -430,8 +445,61 @@ export default {
     },
     mounted() {
         this.fetchMeetingData(); // Call fetchMeetingData directly
+         const prevButton = document.querySelector('.fc-prev-button');
+        const nextButton = document.querySelector('.fc-next-button');
+        const todayButton = document.querySelector('.fc-today-button');
+        const dayGridMonthButton = document.querySelector('.fc-dayGridMonth-button');
+        const dayGridWeekButton = document.querySelector('.fc-dayGridWeek-button');
+        const timeGridDayButton = document.querySelector('.fc-timeGridDay-button');
+
+        prevButton.addEventListener('click', () => {
+            // console.log('Clicked on Previous button');
+        });
+
+        nextButton.addEventListener('click', () => {
+            // console.log('Clicked on Next button');
+        });
+
+        todayButton.addEventListener('click', () => {
+            // console.log('Clicked on Today button');
+        });
+
+        dayGridMonthButton.addEventListener('click', () => {
+            this.calendarOptions.events = this.modifiedEvents;
+            // console.log('Clicked on Day Grid Month button');
+        });
+
+        dayGridWeekButton.addEventListener('click', () => {
+            this.calendarOptions.events = this.modifiedEvents;
+            // console.log('Clicked on Day Grid Week button');
+        });
+
+            timeGridDayButton.addEventListener('click', () => {
+            this.calendarOptions.events = this.originalEvents;
+            // console.log('Clicked on Time Grid Day button',this.originalEvents);
+        });
     },
 };
 </script>
 
-<style scoped></style>
+<style>
+
+.fc-h-event .fc-event-title {
+
+    max-width: 70% !important;
+}
+.fc-scrollgrid-sync-table{
+    height: 200px!important;
+}
+.fc-scrollgrid-sync-table td{
+    height: 200px!important;
+}
+.fc-event-title, .fc-event-title-container {
+    background: none !important; /* Use !important to override any existing styles */
+    color: --vz-heading-color; /* Change color as needed */
+}
+.fc-h-event{
+        background: none !important; /* Use !important to override any existing styles */
+    color: --vz-heading-color; /* Change color as needed */
+}
+</style>
