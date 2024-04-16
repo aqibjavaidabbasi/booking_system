@@ -144,34 +144,46 @@
                     <form @submit.prevent="updateEvent">
                         <div class="modal-body">
                             <div class="row">
-                                    <div class="mb-3">
-                                        <label for="eventdate" class="col-form-label">Event Date:</label>
-                                        <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate" />
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="starttime" class="col-form-label">Start Time:</label>
-                                            <input type="time" class="form-control transparent-input" id="starttime" v-model="updateventData.startTime" />
+                                <div class="col-md-6">
+                                    <label for="eventdate" class="col-form-label">Select Status:</label>
+                                        <div class="input-group">
+                                            <label class="input-group-text" for="eventystatus">Status</label>
+                                            <select class="form-select" id="eventystatus" v-model="selectedStatus">
+                                               <option disabled selected>Select Status</option>
+                                                <option value="Cancel">Cancel</option>
+                                                <option value="Delete">Delete</option>
+                                            </select>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="endtime" class="col-form-label">End Time:</label>
-                                            <input type="time" class="form-control transparent-input" id="endtime" v-model="updateventData.endTime" />
-                                        </div>
-                                    </div>
+                                </div>
 
+                                <div class="mb-3">
+                                    <label for="eventdate" class="col-form-label">Event Date:</label>
+                                    <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate" />
+
+                                </div>
+                                <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="description" class="col-form-label">Description:</label>
-                                        <textarea  class="form-control transparent-input bg-transparent" id="description" v-model="updateventData.description" @focus="clearField" autocomplete="off"> </textarea>
+                                        <label for="starttime" class="col-form-label">Start Time:</label>
+                                        <input type="time" class="form-control transparent-input" id="starttime" v-model="updateventData.startTime" />
                                     </div>
+                                </div>
+                                <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="eventdate" class="col-form-label">Enter authintication code:</label>
-                                        <input type="number" name="access_code" class="form-control transparent-input" v-model="deleteCode" placeholder="Enter code">
-                                        <input type="text" class="form-control transparent-input" id="eventid"  v-model="updateventData.eventid" hidden>
-                                        <div v-if="deleteError" style="color: red" class="error-message">{{ deleteError }}</div>
+                                        <label for="endtime" class="col-form-label">End Time:</label>
+                                        <input type="time" class="form-control transparent-input" id="endtime" v-model="updateventData.endTime" />
                                     </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="col-form-label">Description:</label>
+                                    <textarea  class="form-control transparent-input bg-transparent" id="description" v-model="updateventData.description" @focus="clearField" autocomplete="off"> </textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="eventdate" class="col-form-label">Enter authintication code:</label>
+                                    <input type="number" name="access_code" class="form-control transparent-input" v-model="deleteCode" placeholder="Enter code">
+                                    <input type="text" class="form-control transparent-input" id="eventid"  v-model="updateventData.eventid" hidden>
+                                    <div v-if="deleteError" style="color: red" class="error-message">{{ deleteError }}</div>
+                                </div>
 
                             </div>
                         </div>
@@ -377,7 +389,9 @@ export default {
                 startTime: '',
                 endTime: ''
             },
+
             // delet event
+            selectedStatus: '',
             updateventData: {
                 eventid: '',
                 description: '',
@@ -498,7 +512,6 @@ export default {
 
                     // Process modified event data (with time discarded)
                     this.modifiedEvents = response.data.map(event => ({
-                        description: event.description,
                         start: event.start.substring(0, 10),
                         end: event.end.substring(0, 10),
                         'title':event.title,
@@ -506,6 +519,7 @@ export default {
                         color: event.color || '#378006',
                     }));
                     // Set default events to modifiedEvents
+
                     this.calendarOptions.events = this.modifiedEvents;
                 } else {
                     console.log('Token does not exist in the URL');
@@ -538,7 +552,7 @@ export default {
                 console.error("Error submitting booking:", error);
             }
         },
-        //delete event
+        //update  event
         async updateEvent() {
             try {
                 // Validate the access code
@@ -548,6 +562,7 @@ export default {
                     eventDate: this.updateventData.eventDate,
                     startTime: this.updateventData.startTime,
                     endTime: this.updateventData.endTime,
+                    eventstatus: this.selectedStatus
 
                 });
 
