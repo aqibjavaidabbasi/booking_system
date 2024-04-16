@@ -48,6 +48,7 @@
                     <FullCalendar
                         :options="calendarOptions"
                         @dateClick="handleDateClick"
+                        @eventClick="handleEventClick"
                     />
                 </div>
             </div>
@@ -89,18 +90,18 @@
                                         <input type="date" class="form-control transparent-input" id="eventdate" v-model="formData.eventDate" />
                                     </div>
 
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="starttime" class="col-form-label">Start Time:</label>
-                                        <input type="time" class="form-control transparent-input" id="starttime" v-model="formData.startTime" />
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="starttime" class="col-form-label">Start Time:</label>
+                                            <input type="time" class="form-control transparent-input" id="starttime" v-model="formData.startTime" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="endtime" class="col-form-label">End Time:</label>
-                                        <input type="time" class="form-control transparent-input" id="endtime" v-model="formData.endTime" />
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="endtime" class="col-form-label">End Time:</label>
+                                            <input type="time" class="form-control transparent-input" id="endtime" v-model="formData.endTime" />
+                                        </div>
                                     </div>
-                                </div>
 
                                      <div class="mb-3">
                                         <label for="description" class="col-form-label">Description:</label>
@@ -111,6 +112,69 @@
                                 <!-- Submit button -->
 
                         </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-danger"
+                                    @click="closeModal"
+                                >
+                                    Close
+                                </button>
+                                <button type="submit" class="btn btn-outline-success">
+                                    Book Meeting
+                                </button>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- event2 -->
+        <!-- delete modal -->
+        <div class="modal fade" id="delet-event" tabindex="-1" :class="{'show d-block' : updatevent}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="eventLabel">Update Meeting</h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            @click="closeModal"
+                        ></button>
+                    </div>
+                    <form @submit.prevent="updateEvent">
+                        <div class="modal-body">
+                            <div class="row">
+                                    <div class="mb-3">
+                                        <label for="eventdate" class="col-form-label">Event Date:</label>
+                                        <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate" />
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="starttime" class="col-form-label">Start Time:</label>
+                                            <input type="time" class="form-control transparent-input" id="starttime" v-model="updateventData.startTime" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="endtime" class="col-form-label">End Time:</label>
+                                            <input type="time" class="form-control transparent-input" id="endtime" v-model="updateventData.endTime" />
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="description" class="col-form-label">Description:</label>
+                                        <textarea  class="form-control transparent-input bg-transparent" id="description" v-model="updateventData.description" @focus="clearField" autocomplete="off"> </textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="eventdate" class="col-form-label">Enter authintication code:</label>
+                                        <input type="number" name="access_code" class="form-control transparent-input" v-model="deleteCode" placeholder="Enter code">
+                                        <input type="text" class="form-control transparent-input" id="eventid"  v-model="updateventData.eventid" hidden>
+                                        <div v-if="deleteError" style="color: red" class="error-message">{{ deleteError }}</div>
+                                    </div>
+
+                            </div>
+                        </div>
                         <div class="modal-footer">
                             <button
                                 type="button"
@@ -120,14 +184,14 @@
                                 Close
                             </button>
                             <button type="submit" class="btn btn-outline-success">
-                                Book Meeting
+                                Update Booking
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- event2 -->
+        <!-- end delete modal -->
         <!-- importent -->
         <div class="app-menu navbar-menu border-end d-none">
             <!-- LOGO -->
@@ -294,6 +358,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
 import timeGridPlugin from '@fullcalendar/timegrid'
 import moment from 'moment';
+
+
 export default {
     components: {
         FullCalendar,
@@ -301,6 +367,7 @@ export default {
     data() {
         return {
             eventmodal :false,
+            updatevent :false,
             // formdata
             formData: {
                 name: '',
@@ -310,9 +377,19 @@ export default {
                 startTime: '',
                 endTime: ''
             },
+            // delet event
+            updateventData: {
+                eventid: '',
+                description: '',
+                eventDate: '',
+                startTime: '',
+                endTime: ''
+            },
+            deleteError: '',
+            //
             // end formdata
-            originalEvents: [], // Store the original event data
-            modifiedEvents: [], // Store the modified event data (with time discarded)
+            originalEvents: [],
+            modifiedEvents: [],
             meetings:[],
             calendarOptions: {
                 plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
@@ -321,22 +398,13 @@ export default {
                 weekends: false,
                 events: [],
                 dateClick: this.handleDateClick,
+                eventClick: this.handleEventClick,
                 eventClassNames: this.getEventClassNames,
                 eventContent:this.renderEventContent,
                 views: {
-                    dayGrid: {
-                        // Options apply to dayGridPlugin only
-                        eventDisplay: "block", // Show events as blocks in day grid view
-                    },
-                    week: {
-                        // Options apply to the week view
-                        // columnHeaderFormat: { weekday: 'long' }, // Remove this line
-                    },
-                    timeGrid: {
-                        // Options apply to the timeGrid views (timeGridWeek and timeGridDay)
-                        // columnHeader: true, // Remove this line
-                        // columnHeaderFormat: { weekday: 'long' }, // Remove this line
-                    },
+                    dayGrid: {},
+                    week: {},
+                    timeGrid: {},
                 },
                 headerToolbar: {
                     left: 'today prev next', // Add custom button
@@ -345,16 +413,16 @@ export default {
                 },
 
             },
-            fetchMeetingData: this.fetchMeetingData.bind(this),
+            // fetchMeetingData: this.fetchMeetingData.bind(this),
         };
     },
     methods: {
         handleDateClick(info) {
             // this.calendarOptions.initialView = 'timeGridWeek';
-            console.log("Clicked on date:", info.dateStr);
+            // console.log("Clicked on date:", info.dateStr);
 
             if (moment(info.dateStr, 'YYYY-MM-DD', true).isValid()) {
-                console.log("Date with time:", moment(info.dateStr).format('HH:mm:ss'));
+                // console.log("Date with time:", moment(info.dateStr).format('HH:mm:ss'));
             } else {
 
                     let time = moment(info.dateStr).format('HH:mm:ss');
@@ -367,13 +435,43 @@ export default {
             }
             let date = moment(info.dateStr).format('YYYY-MM-DD');
              this.formData.eventDate = date;
-            console.log(this.formData);
+            // console.log(this.formData);
             // Open Bootstrap modal
             this.eventmodal = true;
         },
+        handleEventClick(info) {
+            // console.log(info.event);
+
+            // Extract start and end times from the title string
+            const title = info.event._def.title;
+            const [startTimeStr, endTimeStr] = title.match(/\(([^-]+) - ([^\)]+)\)/).slice(1);
+
+            // Format start and end times using moment.js
+            const startTime = moment(startTimeStr.trim(), 'HH:mm');
+            const endTime = moment(endTimeStr.trim(), 'HH:mm');
+
+            // Check if the times are valid
+            if (startTime.isValid() && endTime.isValid()) {
+                // Assign the formatted times to your data properties
+                this.updateventData.startTime = startTime.format('HH:mm:ss');
+                this.updateventData.endTime = endTime.format('HH:mm:ss');
+                // console.log("Formatted start time:", this.updateventData.startTime);
+                // console.log("Formatted end time:", this.updateventData.endTime);
+            } else {
+                console.error("Invalid start or end time format");
+            }
+
+            const eventId = info.event.id;
+            let date = moment(info.dateStr).format('YYYY-MM-DD');
+            this.updateventData.eventDate = date;
+            this.updateventData.eventid = eventId;
+            this.updatevent = true;
+        },
+        //
         closeModal() {
             // Close Bootstrap modal
            this.eventmodal = false;
+           this.updatevent = false;
         },
         getEventClassNames({ event }) {
             if (event.classNames) {
@@ -400,12 +498,13 @@ export default {
 
                     // Process modified event data (with time discarded)
                     this.modifiedEvents = response.data.map(event => ({
+                        description: event.description,
                         start: event.start.substring(0, 10),
                         end: event.end.substring(0, 10),
                         'title':event.title,
+                        'id':event.id,
                         color: event.color || '#378006',
                     }));
-
                     // Set default events to modifiedEvents
                     this.calendarOptions.events = this.modifiedEvents;
                 } else {
@@ -426,21 +525,47 @@ export default {
                 `
             };
             },
-            //
-            async submitbooking() {
+        //
+        async submitbooking() {
             try {
                 const response = await axios.post("/api/store-booking", this.formData);
-                console.log(response.data.valid);
-                    this.eventmodal = false;
+                // console.log(response.data.valid);
+                this.eventmodal = false;
                 this.fetchMeetingData();
-
-
             } catch (error) {
                 this.eventmodal = false;
                 this.fetchMeetingData();
                 console.error("Error submitting booking:", error);
             }
-        }
+        },
+        //delete event
+        async updateEvent() {
+            try {
+                // Validate the access code
+                const response = await axios.post("/api/validate-auth-code", {
+                    access_code: this.deleteCode,
+                    eventid: this.updateventData.eventid,
+                    eventDate: this.updateventData.eventDate,
+                    startTime: this.updateventData.startTime,
+                    endTime: this.updateventData.endTime,
+
+                });
+
+                if (response.data.valid) {
+                    // If access code is valid, delete the event
+                    // await axios.delete(`/api/delete-event/${this.updateventData.eventid}`);
+                    this.closeModal();
+                    this.fetchMeetingData(); // Refresh the calendar
+                } else {
+                    // If access code is invalid, set the deleteError message
+                    this.deleteError = "Invalid authintication code";
+                }
+            } catch (error) {
+                console.error("Error deleting event:", error);
+                this.deleteError = "Enter valid  authintication code.";
+            }
+        },
+
     },
     mounted() {
         this.fetchMeetingData(); // Call fetchMeetingData directly
@@ -501,4 +626,6 @@ export default {
         background: none !important; /* Use !important to override any existing styles */
     color: var(--vz-heading-color); /* Change color as needed */
 }
+ /*delete modal code */
+
 </style>

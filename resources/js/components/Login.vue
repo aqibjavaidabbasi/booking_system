@@ -85,7 +85,7 @@ const router = useRouter();
 const accessCode = ref("");
 const errorMessage = ref("");
 const checkAccessCode = async () => {
-  try {
+try {
     const response = await axios.post("/api/validate-access-code", {
       access_code: accessCode.value,
     });

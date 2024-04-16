@@ -143,6 +143,7 @@ class MeetingRoomController extends Controller
     // check the accedd token
     public function validateAccessCode(Request $request)
     {
+        dd($request->input('access_code'));
         $accessCode = $request->input('access_code');
 
          session()->put('AccessCode', $accessCode);
@@ -155,11 +156,10 @@ class MeetingRoomController extends Controller
         return response()->json(['valid' => false], 422);
         }
     }
+
     // get data
     public function getMeetingData(Request $request ,$token = null)
     {
-
-
 
         $accesstoken = '';
         if ($token != null) {
@@ -192,6 +192,7 @@ class MeetingRoomController extends Controller
                 $color = 'orange';
             }
             return [
+                'id' => $meeting->id,
                 'title' => "Booked" . ' (' . Carbon::parse($meeting->start_time)->format('h:i') .
                 ' - ' . Carbon::parse($meeting->end_time)->format('h:i') . ')',
                 "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'), // Format start time in ISO 8601
@@ -246,5 +247,35 @@ class MeetingRoomController extends Controller
         $booking->save();
         Mail::to($user->email)->send(new BookingConfirmation($booking));
         return response()->json(200);
+    }
+    // checking validate code before delete
+    public function checkAuthCode(Request $request)
+    {
+
+        $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $request->access_code)->first();
+
+        if ($request->access_code) {
+            $booking = BookingMeeting::where('id', $request->eventid)->first();
+            $startTime = $request->input('startTime');
+            $endTime = $request->input('endTime');
+
+            if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
+
+             // If the input times are already in the desired format
+                $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
+                $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
+            } else {
+
+                // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
+                $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
+                $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
+            }
+
+            $booking->save();
+            return response()->json(['valid' => true], 200);
+        } else {
+
+            return response()->json(['valid' => false], 422);
+        }
     }
 }
