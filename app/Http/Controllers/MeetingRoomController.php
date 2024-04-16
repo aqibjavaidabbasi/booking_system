@@ -188,6 +188,9 @@ class MeetingRoomController extends Controller
             case 'Reject':
                 $color = 'red';
             break;
+            case 'Cancel':
+                $color = 'red';
+            break;
             default:
                 $color = 'orange';
             }
@@ -197,7 +200,7 @@ class MeetingRoomController extends Controller
                 ' - ' . Carbon::parse($meeting->end_time)->format('h:i') . ')',
                 "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'), // Format start time in ISO 8601
                 "end" => Carbon::parse($meeting->end_time)->format('Y-m-d\TH:i:s'), // Format end time in ISO 8601
-                'color' => 'green',
+                'color' => $color,
             ];
         });
 
@@ -248,30 +251,36 @@ class MeetingRoomController extends Controller
         Mail::to($user->email)->send(new BookingConfirmation($booking));
         return response()->json(200);
     }
-    // checking validate code before delete
+    // checking validate code before update and cancel or Delete
     public function checkAuthCode(Request $request)
     {
 
         $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $request->access_code)->first();
 
-        if ($request->access_code) {
+        if ($user) {
             $booking = BookingMeeting::where('id', $request->eventid)->first();
-            $startTime = $request->input('startTime');
-            $endTime = $request->input('endTime');
+            if($request->eventstatus == "Cancel")
+            {
+                 $startTime = $request->input('startTime');
+                 $endTime = $request->input('endTime');
 
-            if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
+                 if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
 
-             // If the input times are already in the desired format
-                $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
-                $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
-            } else {
+                 // If the input times are already in the desired format
+                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
+                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
+                 } else {
 
-                // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
-                $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
-                $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
+                 // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
+                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
+                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
+                 }
+                 $booking->status = $request->eventstatus;
+                 $booking->save();
+            }else{
+                $booking->delete();
             }
 
-            $booking->save();
             return response()->json(['valid' => true], 200);
         } else {
 
