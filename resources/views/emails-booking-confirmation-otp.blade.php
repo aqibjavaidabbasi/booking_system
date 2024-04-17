@@ -57,19 +57,13 @@
         </div>
         <div class="content">
             <p><strong>Booking Info,</strong></p>
-            <p>Your time slot has been booked successfully.</p>
-            <p>Your booking details:</p>
-            <ul>
-                <li><strong>Start Time:</strong> {{ $booking->start_time }}</li>
-                <li><strong>End Time:</strong> {{ $booking->end_time }}</li>
-            </ul>
-            <p>Please note that the link will be sent when the slot has been approved.</p>
-            <p>Thank you!</p>
+            <p>Your Otp: {{ $user->auth_code }}</p>
+
+            < </div>
+                <div class="footer">
+                    This email is automatically generated. Please do not reply.
+                </div>
         </div>
-        <div class="footer">
-            This email is automatically generated. Please do not reply.
-        </div>
-    </div>
 </body>
 
 </html>

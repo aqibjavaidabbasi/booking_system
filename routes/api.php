@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MeetingRoomController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,6 +17,12 @@ use App\Http\Controllers\MeetingRoomController;
 
 // for front end
 // routes/web.php
+// route::get('test', function () {
+//     session()->put('code', '123');
+// });
+// route::get('test2', function () {
+//     dd(session()->get('code'));
+// });
 Route::post('/validate-access-code', [MeetingRoomController::class, 'validateAccessCode']);
 Route::post('/validate-auth-code', [MeetingRoomController::class, 'checkAuthCode']);
 Route::post('/store-booking', [MeetingRoomController::class, 'storeBooking']);

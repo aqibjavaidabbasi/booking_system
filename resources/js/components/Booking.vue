@@ -67,7 +67,8 @@
                         ></button>
                     </div>
                      <form @submit.prevent="submitbooking">
-                        <div class="modal-body">
+
+                        <div class="modal-body" >
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -85,10 +86,10 @@
                                 </div>
 
 
-                                    <div class="mb-3">
+                                    <!-- <div class="mb-3" >
                                         <label for="eventdate" class="col-form-label">Event Date:</label>
                                         <input type="date" class="form-control transparent-input" id="eventdate" v-model="formData.eventDate" />
-                                    </div>
+                                    </div> -->
 
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -110,9 +111,8 @@
 
                             </div>
                                 <!-- Submit button -->
-
                         </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer" v-if="formsbuttons">
                                 <button
                                     type="button"
                                     class="btn btn-outline-danger"
@@ -124,12 +124,24 @@
                                     Book Meeting
                                 </button>
                             </div>
+                             <!-- Loader -->
+                            <div class="modal-footer">
+                                <div v-if="isSubmitting" class="spinner-border text-primary text-center" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+
+                            <!-- Message -->
+                                <div v-if="showMessage" class="alert alert-success" role="alert">
+                                    Verification email sent to your email. Please check your email and view the link to verify the booking.
+                                </div>
+                            </div>
+
                     </form>
                 </div>
             </div>
         </div>
         <!-- event2 -->
-        <!-- delete modal -->
+        <!-- update modal -->
         <div class="modal fade" id="delet-event" tabindex="-1" :class="{'show d-block' : updatevent}">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -151,16 +163,14 @@
                                             <select class="form-select" id="eventystatus" v-model="selectedStatus">
                                                <option disabled selected>Select Status</option>
                                                 <option value="Cancel">Cancel</option>
-                                                <option value="Delete">Delete</option>
                                             </select>
                                         </div>
                                 </div>
+                                <!-- <div class="mb-3">
+                                    <label for="eventdate" class="col-form-label">Event Date:</label> -->
+                                    <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate"  hidden/>
 
-                                <div class="mb-3">
-                                    <label for="eventdate" class="col-form-label">Event Date:</label>
-                                    <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate" />
-
-                                </div>
+                                <!-- </div> -->
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="starttime" class="col-form-label">Start Time:</label>
@@ -379,7 +389,11 @@ export default {
     data() {
         return {
             eventmodal :false,
-            updatevent :false,
+            updatevent: false,
+            isSubmitting: false,
+            showMessage: false,
+            formsrowdata: true,
+            formsbuttons: true,
             // formdata
             formData: {
                 name: '',
@@ -432,9 +446,14 @@ export default {
     },
     methods: {
         handleDateClick(info) {
-            // this.calendarOptions.initialView = 'timeGridWeek';
-            // console.log("Clicked on date:", info.dateStr);
-
+                this.formsbuttons = true;
+                this.isSubmitting = false;
+                this.eventmodal = false;
+                this.showMessage = false;
+            // make empty the form data
+            for (let key in this.formData) {
+                this.formData[key] = '';
+            }
             if (moment(info.dateStr, 'YYYY-MM-DD', true).isValid()) {
                 // console.log("Date with time:", moment(info.dateStr).format('HH:mm:ss'));
             } else {
@@ -448,13 +467,16 @@ export default {
                     this.formData.endTime = timeend ;
             }
             let date = moment(info.dateStr).format('YYYY-MM-DD');
+            console.log("check date:",date);
              this.formData.eventDate = date;
             // console.log(this.formData);
             // Open Bootstrap modal
             this.eventmodal = true;
+
         },
         handleEventClick(info) {
-            // console.log(info.event);
+
+
 
             // Extract start and end times from the title string
             const title = info.event._def.title;
@@ -469,15 +491,15 @@ export default {
                 // Assign the formatted times to your data properties
                 this.updateventData.startTime = startTime.format('HH:mm:ss');
                 this.updateventData.endTime = endTime.format('HH:mm:ss');
-                // console.log("Formatted start time:", this.updateventData.startTime);
-                // console.log("Formatted end time:", this.updateventData.endTime);
             } else {
-                console.error("Invalid start or end time format");
+                // console.error("Invalid start or end time format");
             }
 
             const eventId = info.event.id;
-            let date = moment(info.dateStr).format('YYYY-MM-DD');
-            this.updateventData.eventDate = date;
+            const eventStartDate = moment(info.event.start).format('YYYY-MM-DD');
+            // console.log("Clicked event date:", eventStartDate);
+
+            this.updateventData.eventDate = eventStartDate;
             this.updateventData.eventid = eventId;
             this.updatevent = true;
         },
@@ -512,6 +534,7 @@ export default {
 
                     // Process modified event data (with time discarded)
                     this.modifiedEvents = response.data.map(event => ({
+                        date: event.start.substring(0, 10),
                         start: event.start.substring(0, 10),
                         end: event.end.substring(0, 10),
                         'title':event.title,
@@ -541,14 +564,16 @@ export default {
             },
         //
         async submitbooking() {
+
             try {
+
+                this.formsbuttons = false;
+                this.isSubmitting = true;
+                this.showMessage = true;
                 const response = await axios.post("/api/store-booking", this.formData);
-                // console.log(response.data.valid);
-                this.eventmodal = false;
                 this.fetchMeetingData();
             } catch (error) {
                 this.eventmodal = false;
-                this.fetchMeetingData();
                 console.error("Error submitting booking:", error);
             }
         },
