@@ -22,15 +22,8 @@ Route::get('/admin-login', function () {
 return view('auth.login');
 })->name('login');
 
-Auth::routes();
+// Auth::routes();
 
-Route::get('/clear', function () {
-    Artisan::call('config:cache');
-    Artisan::call('cache:clear');
-    Artisan::call('route:clear');
-    Artisan::call('view:clear');
-return "Cleared";
-});
 
 
 

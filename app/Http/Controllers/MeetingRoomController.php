@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Session;
 use App\Mail\BookingConfirmation;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendNotificationEmail;
+use App\Mail\BookingConfirmationOTP;
+use Illuminate\Support\Facades\Crypt;
 class MeetingRoomController extends Controller
 {
     /**
@@ -143,39 +145,38 @@ class MeetingRoomController extends Controller
     // check the accedd token
     public function validateAccessCode(Request $request)
     {
-        dd($request->input('access_code'));
+
         $accessCode = $request->input('access_code');
-
-         session()->put('AccessCode', $accessCode);
-
         $meetingRoom = MeetingRoom::where('access_code', $accessCode)->first();
         // dd($meetingRoom);
         if ($meetingRoom) {
-        return response()->json(['valid' => true], 200);
+            session()->put('AccessCode', $accessCode);
+            return response()->json(['valid' => true], 200);
         } else {
-        return response()->json(['valid' => false], 422);
+            return response()->json(['valid' => false], 422);
         }
     }
 
     // get data
     public function getMeetingData(Request $request ,$token = null)
     {
-
+        // dd(session()->get('AccessCode'));
         $accesstoken = '';
-        if ($token != null) {
+        if ($token != null && $token != 'undefined') {
             // chjeck an dverify the token .
-            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
+
+            $decryptedToken = Crypt::decryptString($token);
+            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $decryptedToken)->first();
 
             if ($user) {
                 $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
-                session()->put('AccessCode', $accesstoken);
-            } else if ($token == 'undefined') {
-
-                $accesstoken = session()->get('AccessCode');
             }
-        }
+        }if ($token == 'undefined') {
 
+            $accesstoken = session()->get('AccessCode');
+        }
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code','347655')->first();
+        // $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
             $color = '';
             switch ($meeting->status) {
@@ -198,8 +199,8 @@ class MeetingRoomController extends Controller
                 'id' => $meeting->id,
                 'title' => "Booked" . ' (' . Carbon::parse($meeting->start_time)->format('h:i') .
                 ' - ' . Carbon::parse($meeting->end_time)->format('h:i') . ')',
-                "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'), // Format start time in ISO 8601
-                "end" => Carbon::parse($meeting->end_time)->format('Y-m-d\TH:i:s'), // Format end time in ISO 8601
+                "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'),
+                "end" => Carbon::parse($meeting->end_time)->format('Y-m-d\TH:i:s'),
                 'color' => $color,
             ];
         });
@@ -215,14 +216,31 @@ class MeetingRoomController extends Controller
     public function storeBooking(Request $request)
     {
 
+        $user = User::where('email',$request->input('email'))->first();
+        if (!$user) {
 
-        $user = new User();
-            $user->name  =   $request->input('name');
-            // $user->email =  $request->input('email');
+            $user = new User();
+            $user->name = $request->input('name');
+            $user->email = $request->input('email');
+
+
+            if ($user->auth_code == null && $user->auth_code == false) {
+
+                $user->status = true;
+
+                 $authCode = str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
+                 $encryptedAuthCode = Crypt::encryptString($authCode);
+                 $user->auth_code = $encryptedAuthCode;
+
+                // send here dynamic code with email
+                Mail::to($user->email)->send(new SendNotificationEmail($user, $user->status));
+            } else {
+                Mail::to($user->email)->send(new SendNotificationEmail($user, $user->status));
+            }
+        }
         $user->save();
         // new meeting booking
         $booking = new BookingMeeting();
-        // $meetingRoom = MeetingRoom::where('access_code', session::get('access_code'))->first();
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code', session()->get('AccessCode'))->first();
 
         $booking->meeting_room_id = $meetingRoom->id;
@@ -242,13 +260,10 @@ class MeetingRoomController extends Controller
                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
             }
+            $booking->description = $request->input('description');
 
-
-
-        $booking->description = $request->input('description');
-
-        $booking->save();
-        Mail::to($user->email)->send(new BookingConfirmation($booking));
+            $booking->save();
+            // Mail::to($user->email)->send(new BookingConfirmation($booking));
         return response()->json(200);
     }
     // checking validate code before update and cancel or Delete
@@ -256,30 +271,30 @@ class MeetingRoomController extends Controller
     {
 
         $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $request->access_code)->first();
+        // // send first time one email
+        // Mail::to($user->email)->send(new BookingConfirmationOTP($user));
 
-        if ($user) {
-            $booking = BookingMeeting::where('id', $request->eventid)->first();
-            if($request->eventstatus == "Cancel")
-            {
-                 $startTime = $request->input('startTime');
-                 $endTime = $request->input('endTime');
+        if ($user->auth_code == $request->access_code) {
+                //
+                $booking = BookingMeeting::where('id', $request->eventid)->first();
 
-                 if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
+                $startTime = $request->input('startTime');
+                $endTime = $request->input('endTime');
 
-                 // If the input times are already in the desired format
-                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
-                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
-                 } else {
+                if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
 
-                 // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
-                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
-                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
-                 }
-                 $booking->status = $request->eventstatus;
-                 $booking->save();
-            }else{
-                $booking->delete();
-            }
+                // If the input times are already in the desired format
+                $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
+                $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
+                } else {
+
+                // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
+                $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
+                $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
+                }
+                $booking->status = $request->eventstatus;
+                $booking->save();
+                Mail::to($user->email)->send(new BookingConfirmation($booking));
 
             return response()->json(['valid' => true], 200);
         } else {
