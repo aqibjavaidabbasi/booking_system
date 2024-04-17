@@ -90,7 +90,7 @@ try {
       access_code: accessCode.value,
     });
     console.log(response.data.valid);
-
+    localStorage.setItem('accessCode',response.data?.accessCode)
     if (response.data.valid) {
       router.replace({ name: "Booking" });
     } else {

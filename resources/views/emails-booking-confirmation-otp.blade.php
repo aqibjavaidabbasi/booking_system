@@ -57,13 +57,13 @@
         </div>
         <div class="content">
             <p><strong>Booking Info,</strong></p>
-            <p>Your Otp: {{ $user->auth_code }}</p>
+            <p>Your Otp: {{ $otp }}</p>
 
-            < </div>
-                <div class="footer">
-                    This email is automatically generated. Please do not reply.
-                </div>
         </div>
+        <div class="footer">
+            This email is automatically generated. Please do not reply.
+        </div>
+    </div>
 </body>
 
 </html>

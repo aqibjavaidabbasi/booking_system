@@ -23,12 +23,7 @@ return view('auth.login');
 })->name('login');
 
 // Auth::routes();
-
-
-
-
 Route::get('/logout', [HomeController::class, 'logout'])->name('logout');
-
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::group(
     ['prefix' => "/dashboard/", "middleware" => ["auth", 'verified']],
