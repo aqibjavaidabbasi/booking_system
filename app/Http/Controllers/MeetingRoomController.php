@@ -151,7 +151,9 @@ class MeetingRoomController extends Controller
         // dd($meetingRoom);
         if ($meetingRoom) {
             session()->put('AccessCode', $accessCode);
-            return response()->json(['valid' => true], 200);
+            session()->save();
+
+            return response()->json(['valid' => true,'accessCode' => $accessCode], 200);
         } else {
             return response()->json(['valid' => false], 422);
         }
@@ -160,23 +162,24 @@ class MeetingRoomController extends Controller
     // get data
     public function getMeetingData(Request $request ,$token = null)
     {
-        // dd(session()->get('AccessCode'));
+
         $accesstoken = '';
         if ($token != null && $token != 'undefined') {
             // chjeck an dverify the token .
 
             $decryptedToken = Crypt::decryptString($token);
             $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $decryptedToken)->first();
+            dd($user);
 
             if ($user) {
                 $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
             }
-        }if ($token == 'undefined') {
+        }else if ($token == 'undefined') {
 
-            $accesstoken = session()->get('AccessCode');
+            $accesstoken = $request->accessCode;
         }
-        $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code','347655')->first();
-        // $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
+        // $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code','347655')->first();
+        $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
             $color = '';
             switch ($meeting->status) {
@@ -217,8 +220,8 @@ class MeetingRoomController extends Controller
     {
 
         $user = User::where('email',$request->input('email'))->first();
-        if (!$user) {
 
+        if (!$user) {
             $user = new User();
             $user->name = $request->input('name');
             $user->email = $request->input('email');
@@ -267,16 +270,27 @@ class MeetingRoomController extends Controller
         return response()->json(200);
     }
     // checking validate code before update and cancel or Delete
+    // send otp
+    public function sendotp($id)
+    {
+       $booking = BookingMeeting::with('user')->where('id', $id)->first();
+        $user = User::where('id',$booking->user_id)->first();
+
+        $otp = mt_rand(100000, 999999);
+        session(['otp' => $otp]);
+        Mail::to($user->email)->send(new BookingConfirmationOTP($otp));
+        return response()->json(200);
+    }
     public function checkAuthCode(Request $request)
     {
+        $otp = session('otp');
 
-        $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $request->access_code)->first();
-        // // send first time one email
-        // Mail::to($user->email)->send(new BookingConfirmationOTP($user));
 
-        if ($user->auth_code == $request->access_code) {
+           $booking = BookingMeeting::where('id', $request->eventid)->first();
+
+        if ($booking != null && $request->access_code == session('otp')) {
                 //
-                $booking = BookingMeeting::where('id', $request->eventid)->first();
+                // $booking = BookingMeeting::where('id', $request->eventid)->first();
 
                 $startTime = $request->input('startTime');
                 $endTime = $request->input('endTime');
@@ -292,9 +306,16 @@ class MeetingRoomController extends Controller
                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
                 }
-                $booking->status = $request->eventstatus;
+                if($request->eventstatus != null)
+                {
+                    $booking->status = $request->eventstatus;
+                }
+
                 $booking->save();
-                Mail::to($user->email)->send(new BookingConfirmation($booking));
+
+                // find the user and send the notification email
+                $user = User::with('BookingMeeting.MeetingRoom')->where('id',$booking->user_id)->first();
+                // Mail::to($user->email)->send(new BookingConfirmation($booking));
 
             return response()->json(['valid' => true], 200);
         } else {

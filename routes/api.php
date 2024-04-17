@@ -26,4 +26,5 @@ use App\Http\Controllers\MeetingRoomController;
 Route::post('/validate-access-code', [MeetingRoomController::class, 'validateAccessCode']);
 Route::post('/validate-auth-code', [MeetingRoomController::class, 'checkAuthCode']);
 Route::post('/store-booking', [MeetingRoomController::class, 'storeBooking']);
+Route::get('/send-otp/{id?}', [MeetingRoomController::class, 'sendotp']);
 Route::get('/get-meetings-data/{token?}', [MeetingRoomController::class, 'getMeetingData']);

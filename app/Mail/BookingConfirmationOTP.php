@@ -13,7 +13,7 @@ class BookingConfirmationOTP extends Mailable
 {
     use Queueable, SerializesModels;
 
-        public $user;
+        public $otp;
 
         /**
         * Create a new message instance.
@@ -22,9 +22,9 @@ class BookingConfirmationOTP extends Mailable
         * @param \App\Models\BookingMeeting $booking
         * @return void
         */
-        public function __construct($user)
+        public function __construct($otp)
         {
-            $this->user = $user;
+            $this->otp = $otp;
         }
 
         public function build()
@@ -33,13 +33,13 @@ class BookingConfirmationOTP extends Mailable
              $subject = 'Booking Confirmation';
              $name = 'Jane Doe';
 
-             return $this->view('emails-booking-confirmation')
+             return $this->view('emails-booking-confirmation-otp')
              ->from($address, $name)
              ->cc($address, $name)
              ->bcc($address, $name)
              ->replyTo($address, $name)
              ->subject($subject)
-             ->with([ 'message' => $this->user ]);
+             ->with([ 'message' => $this->otp ]);
 
 
         }

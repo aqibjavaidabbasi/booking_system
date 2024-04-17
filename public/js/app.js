@@ -20780,6 +20780,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       showMessage: false,
       formsrowdata: true,
       formsbuttons: true,
+      // otp
+      hideshowotp: true,
+      submitbtn: false,
+      beforeotp: true,
+      showMessageotp: false,
+      otp: false,
       // formdata
       formData: {
         name: '',
@@ -20893,6 +20899,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       this.eventmodal = false;
       this.updatevent = false;
     },
+    showotp: function showotp() {
+      // Close Bootstrap modal
+      this.hideshowotp = false, this.submitbtn = true, this.beforeotp = false;
+      this.otp = true;
+      this.showMessageotp = true;
+      // Trigger API call to send OTP
+      axios__WEBPACK_IMPORTED_MODULE_0___default().get("/api/send-otp/".concat(this.updateventData.eventid)).then(function (response) {
+        console.log("OTP sent successfully:", response);
+        // Handle response if needed
+      })["catch"](function (error) {
+        console.error("Error sending OTP:", error);
+        // Handle error if needed
+      });
+    },
     getEventClassNames: function getEventClassNames(_ref) {
       var event = _ref.event;
       if (event.classNames) {
@@ -20907,7 +20927,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       var _arguments = arguments,
         _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, response;
+        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, accessCode, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -20918,13 +20938,14 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null;
               apiUrl = "/api/get-meetings-data";
               if (!(tokenFromUrl !== null)) {
-                _context.next = 16;
+                _context.next = 17;
                 break;
               }
-              apiUrl += "/".concat(tokenFromUrl);
-              _context.next = 10;
+              accessCode = localStorage.getItem('accessCode');
+              apiUrl += "/".concat(tokenFromUrl, "?accessCode=").concat(accessCode);
+              _context.next = 11;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().get(apiUrl);
-            case 10:
+            case 11:
               response = _context.sent;
               // Process original event data
               _this.originalEvents = response.data;
@@ -20943,22 +20964,22 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               // Set default events to modifiedEvents
 
               _this.calendarOptions.events = _this.modifiedEvents;
-              _context.next = 17;
+              _context.next = 18;
               break;
-            case 16:
-              console.log('Token does not exist in the URL');
             case 17:
-              _context.next = 22;
+              console.log('Token does not exist in the URL');
+            case 18:
+              _context.next = 23;
               break;
-            case 19:
-              _context.prev = 19;
+            case 20:
+              _context.prev = 20;
               _context.t0 = _context["catch"](1);
               console.error('Error fetching meeting data:', _context.t0);
-            case 22:
+            case 23:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[1, 19]]);
+        }, _callee, null, [[1, 20]]);
       }))();
     },
     renderEventContent: function renderEventContent(eventInfo) {
@@ -21025,7 +21046,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
                 _this3.fetchMeetingData(); // Refresh the calendar
               } else {
                 // If access code is invalid, set the deleteError message
-                _this3.deleteError = "Invalid authintication code";
+                _this3.deleteError = "Invalid otp code";
               }
               _context3.next = 11;
               break;
@@ -21033,7 +21054,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               _context3.prev = 7;
               _context3.t0 = _context3["catch"](0);
               console.error("Error deleting event:", _context3.t0);
-              _this3.deleteError = "Enter valid  authintication code.";
+              _this3.deleteError = "Enter valid  otp code.";
             case 11:
             case "end":
               return _context3.stop();
@@ -21109,7 +21130,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var errorMessage = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("");
     var checkAccessCode = /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var response;
+        var _response$data, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -21121,6 +21142,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             case 3:
               response = _context.sent;
               console.log(response.data.valid);
+              localStorage.setItem('accessCode', (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.accessCode);
               if (response.data.valid) {
                 router.replace({
                   name: "Booking"
@@ -21129,17 +21151,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 console.log(response.data.valid);
                 errorMessage.value = "Invalid access code.";
               }
-              _context.next = 11;
+              _context.next = 12;
               break;
-            case 8:
-              _context.prev = 8;
+            case 9:
+              _context.prev = 9;
               _context.t0 = _context["catch"](0);
               errorMessage.value = "Enter valid  access code.";
-            case 11:
+            case 12:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[0, 8]]);
+        }, _callee, null, [[0, 9]]);
       }));
       return function checkAccessCode() {
         return _ref2.apply(this, arguments);
@@ -21322,6 +21344,7 @@ var _hoisted_38 = {
   "class": "modal-body"
 };
 var _hoisted_39 = {
+  key: 0,
   "class": "row"
 };
 var _hoisted_40 = {
@@ -21347,54 +21370,68 @@ var _hoisted_45 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 }, "Cancel", -1 /* HOISTED */);
 var _hoisted_46 = [_hoisted_44, _hoisted_45];
 var _hoisted_47 = {
-  "class": "col-md-6"
-};
-var _hoisted_48 = {
   "class": "mb-3"
 };
-var _hoisted_49 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_48 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "for": "eventdate",
+  "class": "col-form-label"
+}, "Event Date:", -1 /* HOISTED */);
+var _hoisted_49 = {
+  "class": "col-md-6"
+};
+var _hoisted_50 = {
+  "class": "mb-3"
+};
+var _hoisted_51 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "starttime",
   "class": "col-form-label"
 }, "Start Time:", -1 /* HOISTED */);
-var _hoisted_50 = {
+var _hoisted_52 = {
   "class": "col-md-6"
 };
-var _hoisted_51 = {
-  "class": "mb-3"
-};
-var _hoisted_52 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-  "for": "endtime",
-  "class": "col-form-label"
-}, "End Time:", -1 /* HOISTED */);
 var _hoisted_53 = {
   "class": "mb-3"
 };
 var _hoisted_54 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-  "for": "description",
+  "for": "endtime",
   "class": "col-form-label"
-}, "Description:", -1 /* HOISTED */);
+}, "End Time:", -1 /* HOISTED */);
 var _hoisted_55 = {
   "class": "mb-3"
 };
 var _hoisted_56 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "for": "description",
+  "class": "col-form-label"
+}, "Description:", -1 /* HOISTED */);
+var _hoisted_57 = {
+  key: 1,
+  "class": "mb-3"
+};
+var _hoisted_58 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "eventdate",
   "class": "col-form-label"
-}, "Enter authintication code:", -1 /* HOISTED */);
-var _hoisted_57 = {
+}, "Enter OTP:", -1 /* HOISTED */);
+var _hoisted_59 = {
   key: 0,
   style: {
     "color": "red"
   },
   "class": "error-message"
 };
-var _hoisted_58 = {
+var _hoisted_60 = {
+  key: 2,
+  "class": "alert alert-success",
+  role: "alert"
+};
+var _hoisted_61 = {
   "class": "modal-footer"
 };
-var _hoisted_59 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+var _hoisted_62 = {
+  key: 1,
   type: "submit",
   "class": "btn btn-outline-success"
-}, " Update Booking ", -1 /* HOISTED */);
-var _hoisted_60 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+};
+var _hoisted_63 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "app-menu navbar-menu border-end d-none"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" LOGO "), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "navbar-brand-box"
@@ -21600,38 +21637,37 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return $options.closeModal && $options.closeModal.apply($options, arguments);
     })
   })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("form", {
-    onSubmit: _cache[20] || (_cache[20] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
+    onSubmit: _cache[21] || (_cache[21] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
       return $options.updateEvent && $options.updateEvent.apply($options, arguments);
     }, ["prevent"]))
-  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_39, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [_hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
+  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [$data.beforeotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_39, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [_hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
     "class": "form-select",
     id: "eventystatus",
     "onUpdate:modelValue": _cache[11] || (_cache[11] = function ($event) {
       return $data.selectedStatus = $event;
     })
-  }, [].concat(_hoisted_46), 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.selectedStatus]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div class=\"mb-3\">\n                                    <label for=\"eventdate\" class=\"col-form-label\">Event Date:</label> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, [].concat(_hoisted_46), 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.selectedStatus]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_47, [_hoisted_48, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "date",
     "class": "form-control transparent-input",
     id: "eventdate",
     "onUpdate:modelValue": _cache[12] || (_cache[12] = function ($event) {
       return $data.updateventData.eventDate = $event;
-    }),
-    hidden: ""
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventDate]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" </div> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_47, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    })
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventDate]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_49, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [_hoisted_51, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "time",
     "class": "form-control transparent-input",
     id: "starttime",
     "onUpdate:modelValue": _cache[13] || (_cache[13] = function ($event) {
       return $data.updateventData.startTime = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.startTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_51, [_hoisted_52, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.startTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_53, [_hoisted_54, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "time",
     "class": "form-control transparent-input",
     id: "endtime",
     "onUpdate:modelValue": _cache[14] || (_cache[14] = function ($event) {
       return $data.updateventData.endTime = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.endTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_53, [_hoisted_54, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.endTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_55, [_hoisted_56, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
     "class": "form-control transparent-input bg-transparent",
     id: "description",
     "onUpdate:modelValue": _cache[15] || (_cache[15] = function ($event) {
@@ -21641,29 +21677,35 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return $options.clearField && $options.clearField.apply($options, arguments);
     }),
     autocomplete: "off"
-  }, " ", 544 /* NEED_HYDRATION, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.description]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_55, [_hoisted_56, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "number",
-    name: "access_code",
-    "class": "form-control transparent-input",
-    "onUpdate:modelValue": _cache[17] || (_cache[17] = function ($event) {
-      return _ctx.deleteCode = $event;
-    }),
-    placeholder: "Enter code"
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, _ctx.deleteCode]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, " ", 544 /* NEED_HYDRATION, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.description]])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" event ID "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "text",
     "class": "form-control transparent-input",
     id: "eventid",
-    "onUpdate:modelValue": _cache[18] || (_cache[18] = function ($event) {
+    "onUpdate:modelValue": _cache[17] || (_cache[17] = function ($event) {
       return $data.updateventData.eventid = $event;
     }),
     hidden: ""
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventid]]), $data.deleteError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_57, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.deleteError), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_58, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventid]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" otp input "), $data.otp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_57, [_hoisted_58, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "number",
+    name: "access_code",
+    "class": "form-control transparent-input",
+    "onUpdate:modelValue": _cache[18] || (_cache[18] = function ($event) {
+      return _ctx.deleteCode = $event;
+    }),
+    placeholder: "Enter code"
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, _ctx.deleteCode]]), $data.deleteError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_59, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.deleteError), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.showMessageotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_60, " Please check the email OTP sent to your email. ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_61, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     type: "button",
     "class": "btn btn-outline-danger",
     onClick: _cache[19] || (_cache[19] = function () {
       return $options.closeModal && $options.closeModal.apply($options, arguments);
     })
-  }, " Close "), _hoisted_59])], 32 /* NEED_HYDRATION */)])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end delete modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" importent "), _hoisted_60, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end importent ")]);
+  }, " Close "), $data.hideshowotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("a", {
+    key: 0,
+    "class": "btn btn-outline-success",
+    onClick: _cache[20] || (_cache[20] = function () {
+      return $options.showotp && $options.showotp.apply($options, arguments);
+    })
+  }, " Update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.submitbtn ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", _hoisted_62, " update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 32 /* NEED_HYDRATION */)])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end delete modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" importent "), _hoisted_63, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end importent ")]);
 }
 
 /***/ }),

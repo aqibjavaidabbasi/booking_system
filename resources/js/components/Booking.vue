@@ -155,7 +155,7 @@
                     </div>
                     <form @submit.prevent="updateEvent">
                         <div class="modal-body">
-                            <div class="row">
+                            <div class="row" v-if="beforeotp">
                                 <div class="col-md-6">
                                     <label for="eventdate" class="col-form-label">Select Status:</label>
                                         <div class="input-group">
@@ -166,11 +166,11 @@
                                             </select>
                                         </div>
                                 </div>
-                                <!-- <div class="mb-3">
-                                    <label for="eventdate" class="col-form-label">Event Date:</label> -->
-                                    <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate"  hidden/>
+                                <div class="mb-3">
+                                    <label for="eventdate" class="col-form-label">Event Date:</label>
+                                    <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate"  />
 
-                                <!-- </div> -->
+                                </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="starttime" class="col-form-label">Start Time:</label>
@@ -188,15 +188,20 @@
                                     <label for="description" class="col-form-label">Description:</label>
                                     <textarea  class="form-control transparent-input bg-transparent" id="description" v-model="updateventData.description" @focus="clearField" autocomplete="off"> </textarea>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="eventdate" class="col-form-label">Enter authintication code:</label>
-                                    <input type="number" name="access_code" class="form-control transparent-input" v-model="deleteCode" placeholder="Enter code">
-                                    <input type="text" class="form-control transparent-input" id="eventid"  v-model="updateventData.eventid" hidden>
-                                    <div v-if="deleteError" style="color: red" class="error-message">{{ deleteError }}</div>
-                                </div>
-
+                            </div>
+                            <!-- event ID -->
+                            <input type="text" class="form-control transparent-input" id="eventid"  v-model="updateventData.eventid" hidden>
+                            <!-- otp input -->
+                            <div class="mb-3" v-if="otp">
+                                <label for="eventdate" class="col-form-label">Enter OTP:</label>
+                                <input type="number" name="access_code" class="form-control transparent-input" v-model="deleteCode" placeholder="Enter code">
+                                <div v-if="deleteError" style="color: red" class="error-message">{{ deleteError }}</div>
+                            </div>
+                            <div v-if="showMessageotp" class="alert alert-success" role="alert">
+                                    Please check the email OTP sent to your email.
                             </div>
                         </div>
+
                         <div class="modal-footer">
                             <button
                                 type="button"
@@ -205,8 +210,11 @@
                             >
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-outline-success">
-                                Update Booking
+                            <a  class="btn btn-outline-success" @click="showotp" v-if="hideshowotp">
+                               Update Booking
+                            </a>
+                            <button type="submit" class="btn btn-outline-success" v-if="submitbtn">
+                                update Booking
                             </button>
                         </div>
                     </form>
@@ -394,6 +402,12 @@ export default {
             showMessage: false,
             formsrowdata: true,
             formsbuttons: true,
+            // otp
+            hideshowotp: true,
+            submitbtn: false,
+            beforeotp: true,
+            showMessageotp: false,
+            otp: false,
             // formdata
             formData: {
                 name: '',
@@ -509,6 +523,25 @@ export default {
            this.eventmodal = false;
            this.updatevent = false;
         },
+        showotp() {
+            // Close Bootstrap modal
+            this.hideshowotp = false,
+            this.submitbtn = true,
+
+            this.beforeotp = false;
+            this.otp = true;
+            this.showMessageotp = true;
+             // Trigger API call to send OTP
+            axios.get(`/api/send-otp/${this.updateventData.eventid}`)
+                .then(response => {
+                    console.log("OTP sent successfully:", response);
+                    // Handle response if needed
+                })
+                .catch(error => {
+                    console.error("Error sending OTP:", error);
+                    // Handle error if needed
+                });
+        },
         getEventClassNames({ event }) {
             if (event.classNames) {
                 return event.classNames;
@@ -526,7 +559,8 @@ export default {
 
                 let apiUrl = "/api/get-meetings-data";
                 if (tokenFromUrl !== null) {
-                    apiUrl += `/${tokenFromUrl}`;
+                    let accessCode = localStorage.getItem('accessCode')
+                    apiUrl += `/${tokenFromUrl}?accessCode=${accessCode}`;
                     const response = await axios.get(apiUrl);
 
                     // Process original event data
@@ -598,11 +632,11 @@ export default {
                     this.fetchMeetingData(); // Refresh the calendar
                 } else {
                     // If access code is invalid, set the deleteError message
-                    this.deleteError = "Invalid authintication code";
+                    this.deleteError = "Invalid otp code";
                 }
             } catch (error) {
                 console.error("Error deleting event:", error);
-                this.deleteError = "Enter valid  authintication code.";
+                this.deleteError = "Enter valid  otp code.";
             }
         },
 
