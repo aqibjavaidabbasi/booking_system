@@ -53,7 +53,11 @@
                 </div>
             </div>
         </div>
-
+        <!-- message -->
+        <div v-if="showMessage">
+        {{ message }}
+        </div>
+        <!-- end message -->
         <!-- event -->
         <div class="modal fade" id="event" tabindex="-1" :class="{'show d-block' : eventmodal}">
             <div class="modal-dialog">
@@ -103,6 +107,7 @@
                                             <input type="time" class="form-control transparent-input" id="endtime" v-model="formData.endTime" />
                                         </div>
                                     </div>
+                                    <!-- access code -->
 
                                      <div class="mb-3">
                                         <label for="description" class="col-form-label">Description:</label>
@@ -388,14 +393,15 @@ import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
 import timeGridPlugin from '@fullcalendar/timegrid'
 import moment from 'moment';
-
-
+import Toastify from 'toastify-js';
 export default {
     components: {
         FullCalendar,
     },
     data() {
         return {
+            message: '',
+
             eventmodal :false,
             updatevent: false,
             isSubmitting: false,
@@ -415,7 +421,8 @@ export default {
                 description: '',
                 eventDate: '',
                 startTime: '',
-                endTime: ''
+                endTime: '',
+                accesscode: ''
             },
 
             // delet event
@@ -464,6 +471,7 @@ export default {
                 this.isSubmitting = false;
                 this.eventmodal = false;
                 this.showMessage = false;
+                // get valuefrom local storage
             // make empty the form data
             for (let key in this.formData) {
                 this.formData[key] = '';
@@ -481,11 +489,12 @@ export default {
                     this.formData.endTime = timeend ;
             }
             let date = moment(info.dateStr).format('YYYY-MM-DD');
-            console.log("check date:",date);
+            // console.log("check date:",date);
              this.formData.eventDate = date;
             // console.log(this.formData);
             // Open Bootstrap modal
             this.eventmodal = true;
+
 
         },
         handleEventClick(info) {
@@ -598,18 +607,45 @@ export default {
             },
         //
         async submitbooking() {
-
             try {
 
-                this.formsbuttons = false;
                 this.isSubmitting = true;
-                this.showMessage = true;
+                this.showMessage = false;
+                 this.formsbuttons = false;
+                let accessCode = localStorage.getItem('accessCode');
+                this.formData.accesscode = accessCode;
+
                 const response = await axios.post("/api/store-booking", this.formData);
-                this.fetchMeetingData();
+                console.log("code check ka",response.data.code);
+                // Check the response status instead of directly accessing `response.code`
+                    if (response.data.code === 200) {
+                        this.message = response.data.message;
+                        this.showToaster(this.message);
+                         this.fetchMeetingData();
+                        this.eventmodal = false;
+                    } else if (response.data.code === 404) {
+                        console.log("asdasdadssdsdasd");
+                        this.formsbuttons = true;
+                        this.isSubmitting = false;
+                            this.message = response.data.message;
+                            this.showToaster(this.message);
+                    }
+
+
             } catch (error) {
-                this.eventmodal = false;
-                console.error("Error submitting booking:", error);
+                // this.eventmodal = false;
+                this.isSubmitting = false;
+                this.showToaster("something went wrong try again!.");
+                // console.log("Error submitting booking:", error);
             }
+        },
+         showToaster(message) {
+           Toastify({
+                text: message,
+                gravity: "top", // Optional, can be "top", "bottom", "left", "right"
+                position: "right", // Optional, can be "left" or "right"
+                duration: 3000, // Optional, duration of the toast in milliseconds
+            }).showToast();
         },
         //update  event
         async updateEvent() {
