@@ -20778,6 +20778,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
   data: function data() {
     return {
       message: '',
+      user: '',
       eventmodal: false,
       updatevent: false,
       isSubmitting: false,
@@ -20850,28 +20851,26 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       this.isSubmitting = false;
       this.eventmodal = false;
       this.showMessage = false;
-      // get valuefrom local storage
       // make empty the form data
       for (var key in this.formData) {
         this.formData[key] = '';
       }
-      if (moment__WEBPACK_IMPORTED_MODULE_1___default()(info.dateStr, 'YYYY-MM-DD', true).isValid()) {
-        // console.log("Date with time:", moment(info.dateStr).format('HH:mm:ss'));
-      } else {
+      if (moment__WEBPACK_IMPORTED_MODULE_1___default()(info.dateStr, 'YYYY-MM-DD', true).isValid()) {} else {
         var time = moment__WEBPACK_IMPORTED_MODULE_1___default()(info.dateStr).format('HH:mm:ss');
         var timeend = moment__WEBPACK_IMPORTED_MODULE_1___default()(time, 'HH:mm:ss').add(30, 'minutes').format('HH:mm:ss'); // Add 30 minutes to the start time
-
         this.formData.startTime = time;
         this.formData.endTime = timeend;
       }
       var date = moment__WEBPACK_IMPORTED_MODULE_1___default()(info.dateStr).format('YYYY-MM-DD');
-      // console.log("check date:",date);
       this.formData.eventDate = date;
-      // console.log(this.formData);
-      // Open Bootstrap modal
       this.eventmodal = true;
     },
     handleEventClick: function handleEventClick(info) {
+      var _info$event, _this$user;
+      if ((info === null || info === void 0 || (_info$event = info.event) === null || _info$event === void 0 || (_info$event = _info$event._def) === null || _info$event === void 0 || (_info$event = _info$event.extendedProps) === null || _info$event === void 0 ? void 0 : _info$event.user_id) != ((_this$user = this.user) === null || _this$user === void 0 ? void 0 : _this$user.id)) {
+        return;
+      }
+
       // Extract start and end times from the title string
       var title = info.event._def.title;
       var _title$match$slice = title.match(/\(([^-]+) - ([^\)]+)\)/).slice(1),
@@ -20933,7 +20932,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       var _arguments = arguments,
         _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, accessCode, response;
+        var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, _response$data, accessCode, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -20944,48 +20943,55 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               tokenFromUrl = tokenIndex > 0 ? urlParts[tokenIndex] : null;
               apiUrl = "/api/get-meetings-data";
               if (!(tokenFromUrl !== null)) {
-                _context.next = 17;
+                _context.next = 20;
                 break;
               }
               accessCode = localStorage.getItem('accessCode');
-              apiUrl += "/".concat(tokenFromUrl, "?accessCode=").concat(accessCode);
-              _context.next = 11;
+              if (tokenFromUrl) {
+                apiUrl += "/".concat(tokenFromUrl);
+              }
+              apiUrl += "?accessCode=".concat(accessCode);
+              _context.next = 12;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().get(apiUrl);
-            case 11:
+            case 12:
               response = _context.sent;
+              _this.user = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.user;
               // Process original event data
-              _this.originalEvents = response.data;
-
+              _this.originalEvents = response.data.data;
+              console.log("check data:", response.data.data);
               // Process modified event data (with time discarded)
-              _this.modifiedEvents = response.data.map(function (event) {
+              _this.modifiedEvents = response.data.data.map(function (event) {
                 return {
                   date: event.start.substring(0, 10),
                   start: event.start.substring(0, 10),
                   end: event.end.substring(0, 10),
                   'title': event.title,
                   'id': event.id,
+                  'extendedProps': {
+                    'user_id': event.user_id
+                  },
                   color: event.color || '#378006'
                 };
               });
               // Set default events to modifiedEvents
 
               _this.calendarOptions.events = _this.modifiedEvents;
-              _context.next = 18;
-              break;
-            case 17:
-              console.log('Token does not exist in the URL');
-            case 18:
-              _context.next = 23;
+              _context.next = 21;
               break;
             case 20:
-              _context.prev = 20;
+              console.log('Token does not exist in the URL');
+            case 21:
+              _context.next = 26;
+              break;
+            case 23:
+              _context.prev = 23;
               _context.t0 = _context["catch"](1);
               console.error('Error fetching meeting data:', _context.t0);
-            case 23:
+            case 26:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[1, 20]]);
+        }, _callee, null, [[1, 23]]);
       }))();
     },
     renderEventContent: function renderEventContent(eventInfo) {
@@ -21020,7 +21026,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
                 _this2.fetchMeetingData();
                 _this2.eventmodal = false;
               } else if (response.data.code === 404) {
-                console.log("asdasdadssdsdasd");
                 _this2.formsbuttons = true;
                 _this2.isSubmitting = false;
                 _this2.message = response.data.message;
@@ -21074,7 +21079,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               response = _context3.sent;
               if (response.data.valid) {
                 // If access code is valid, delete the event
-                // await axios.delete(`/api/delete-event/${this.updateventData.eventid}`);
                 _this3.closeModal();
                 _this3.fetchMeetingData(); // Refresh the calendar
               } else {
@@ -21098,6 +21102,15 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
   },
   mounted: function mounted() {
     var _this4 = this;
+    // Check if access code is stored in localStorage
+    var accessCode = localStorage.getItem('accessCode');
+    if (!accessCode) {
+      // Redirect to the login page
+      this.$router.push({
+        name: 'Login'
+      });
+      return;
+    }
     this.fetchMeetingData(); // Call fetchMeetingData directly
     var prevButton = document.querySelector('.fc-prev-button');
     var nextButton = document.querySelector('.fc-next-button');
@@ -21120,6 +21133,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     });
     dayGridWeekButton.addEventListener('click', function () {
       _this4.calendarOptions.events = _this4.modifiedEvents;
+      // document.querySelector()
       // console.log('Clicked on Day Grid Week button');
     });
     timeGridDayButton.addEventListener('click', function () {
@@ -21163,25 +21177,26 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var errorMessage = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("");
     var checkAccessCode = /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var _response$data, response;
+        var response, _response$data;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
               _context.prev = 0;
-              _context.next = 3;
+              localStorage.removeItem('accessCode');
+              _context.next = 4;
               return axios__WEBPACK_IMPORTED_MODULE_1___default().post("/api/validate-access-code", {
                 access_code: accessCode.value
               });
-            case 3:
+            case 4:
               response = _context.sent;
               console.log(response.data.valid);
-              localStorage.setItem('accessCode', (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.accessCode);
               if (response.data.valid) {
+                localStorage.setItem('accessCode', (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.accessCode);
                 router.replace({
                   name: "Booking"
                 });
               } else {
-                console.log(response.data.valid);
+                //   console.log(response.data.valid);
                 errorMessage.value = "Invalid access code.";
               }
               _context.next = 12;
@@ -21200,11 +21215,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         return _ref2.apply(this, arguments);
       };
     }();
+    var clearErrorMessage = function clearErrorMessage() {
+      errorMessage.value = "";
+    };
     var __returned__ = {
       router: router,
       accessCode: accessCode,
       errorMessage: errorMessage,
       checkAccessCode: checkAccessCode,
+      clearErrorMessage: clearErrorMessage,
       ref: vue__WEBPACK_IMPORTED_MODULE_0__.ref,
       get axios() {
         return (axios__WEBPACK_IMPORTED_MODULE_1___default());
@@ -21778,8 +21797,11 @@ var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementV
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "text-center mt-sm-5 mb-4 text-white-50"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div>\n                                <a href=\"index.html\" class=\"d-inline-block auth-logo\">\n                                    <img src=\"assets/images/logo-light.png\" alt=\"\" height=\"20\">\n                                </a>\n                            </div> "), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-  "class": "mt-3 fs-15 fw-medium"
-}, "Booking Meeting")])])], -1 /* HOISTED */);
+  "class": "mt-3",
+  style: {
+    "font-size": "2rem"
+  }
+}, "Book Meeting")])])], -1 /* HOISTED */);
 var _hoisted_5 = {
   "class": "row justify-content-center"
 };
@@ -21829,8 +21851,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     id: "access_code",
     placeholder: "Enter access code",
-    autocomplete: "off"
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.accessCode]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errorMessage), 1 /* TEXT */)]), _hoisted_14], 32 /* NEED_HYDRATION */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end card body ")])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end row ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end container ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end auth page content ")]);
+    autocomplete: "off",
+    onInput: $setup.clearErrorMessage
+  }, null, 544 /* NEED_HYDRATION, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.accessCode]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", _hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.errorMessage), 1 /* TEXT */)]), _hoisted_14], 32 /* NEED_HYDRATION */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end card body ")])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end row ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end container ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end auth page content ")]);
 }
 
 /***/ }),
@@ -21959,7 +21982,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_laravel_mix_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.fc-h-event .fc-event-title {\n\n    max-width: 70% !important;\n}\n.fc-scrollgrid-sync-table{\n    height: 200px!important;\n}\n.fc-scrollgrid-sync-table td{\n    height: 200px!important;\n}\n.fc-event-title, .fc-event-title-container {\n    background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n.fc-h-event{\n        background: none !important; /* Use !important to override any existing styles */\n    color: var(--vz-heading-color); /* Change color as needed */\n}\n /*delete modal code */\n\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.fc-h-event .fc-event-title {\n\n    max-width: 70% !important;\n}\n.fc-scrollgrid-sync-table{\n    height: 200px;\n}\n.fc-scrollgrid-sync-table td{\n    height: 200px;\n}\n.fc-event-title, .fc-event-title-container {\n    background: none !important; /* Use !important to override any existing styles */\n    color: --vz-heading-color; /* Change color as needed */\n}\n.fc-h-event{\n        background: none !important; /* Use !important to override any existing styles */\n    color: var(--vz-heading-color); /* Change color as needed */\n}\n /*delete modal code */\n\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

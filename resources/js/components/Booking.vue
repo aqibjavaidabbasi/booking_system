@@ -401,6 +401,7 @@ export default {
     data() {
         return {
             message: '',
+            user: '',
 
             eventmodal :false,
             updatevent: false,
@@ -467,39 +468,35 @@ export default {
     },
     methods: {
         handleDateClick(info) {
+
                 this.formsbuttons = true;
                 this.isSubmitting = false;
                 this.eventmodal = false;
                 this.showMessage = false;
-                // get valuefrom local storage
             // make empty the form data
             for (let key in this.formData) {
                 this.formData[key] = '';
             }
             if (moment(info.dateStr, 'YYYY-MM-DD', true).isValid()) {
-                // console.log("Date with time:", moment(info.dateStr).format('HH:mm:ss'));
             } else {
 
-                    let time = moment(info.dateStr).format('HH:mm:ss');
-
-                    let timeend = moment(time, 'HH:mm:ss').add(30, 'minutes').format('HH:mm:ss'); // Add 30 minutes to the start time
-
-
-                    this.formData.startTime = time ;
-                    this.formData.endTime = timeend ;
+                let time = moment(info.dateStr).format('HH:mm:ss');
+                let timeend = moment(time, 'HH:mm:ss').add(30, 'minutes').format('HH:mm:ss'); // Add 30 minutes to the start time
+                this.formData.startTime = time ;
+                this.formData.endTime = timeend ;
             }
             let date = moment(info.dateStr).format('YYYY-MM-DD');
-            // console.log("check date:",date);
-             this.formData.eventDate = date;
-            // console.log(this.formData);
-            // Open Bootstrap modal
+            this.formData.eventDate = date;
             this.eventmodal = true;
 
 
         },
         handleEventClick(info) {
 
-
+                if(info?.event?._def?.extendedProps?.user_id != this.user?.id)
+                {
+                    return;
+                }
 
             // Extract start and end times from the title string
             const title = info.event._def.title;
@@ -569,19 +566,29 @@ export default {
                 let apiUrl = "/api/get-meetings-data";
                 if (tokenFromUrl !== null) {
                     let accessCode = localStorage.getItem('accessCode')
-                    apiUrl += `/${tokenFromUrl}?accessCode=${accessCode}`;
+                    if(tokenFromUrl)
+                    {
+                    apiUrl += `/${tokenFromUrl}`;
+                    }
+
+                        apiUrl += `?accessCode=${accessCode}`;
+
+
                     const response = await axios.get(apiUrl);
-
+                    this.user = response.data?.user;
                     // Process original event data
-                    this.originalEvents = response.data;
-
+                    this.originalEvents = response.data.data;
+                    console.log("check data:", response.data.data);
                     // Process modified event data (with time discarded)
-                    this.modifiedEvents = response.data.map(event => ({
+                    this.modifiedEvents = response.data.data.map(event => ({
                         date: event.start.substring(0, 10),
                         start: event.start.substring(0, 10),
                         end: event.end.substring(0, 10),
                         'title':event.title,
                         'id':event.id,
+                        'extendedProps': {
+                            'user_id':event.user_id,
+                        },
                         color: event.color || '#378006',
                     }));
                     // Set default events to modifiedEvents
@@ -624,7 +631,6 @@ export default {
                          this.fetchMeetingData();
                         this.eventmodal = false;
                     } else if (response.data.code === 404) {
-                        console.log("asdasdadssdsdasd");
                         this.formsbuttons = true;
                         this.isSubmitting = false;
                             this.message = response.data.message;
@@ -663,7 +669,6 @@ export default {
 
                 if (response.data.valid) {
                     // If access code is valid, delete the event
-                    // await axios.delete(`/api/delete-event/${this.updateventData.eventid}`);
                     this.closeModal();
                     this.fetchMeetingData(); // Refresh the calendar
                 } else {
@@ -678,8 +683,15 @@ export default {
 
     },
     mounted() {
+        // Check if access code is stored in localStorage
+        const accessCode = localStorage.getItem('accessCode');
+        if (!accessCode) {
+            // Redirect to the login page
+            this.$router.push({ name: 'Login' });
+            return;
+        }
         this.fetchMeetingData(); // Call fetchMeetingData directly
-         const prevButton = document.querySelector('.fc-prev-button');
+        const prevButton = document.querySelector('.fc-prev-button');
         const nextButton = document.querySelector('.fc-next-button');
         const todayButton = document.querySelector('.fc-today-button');
         const dayGridMonthButton = document.querySelector('.fc-dayGridMonth-button');
@@ -705,6 +717,7 @@ export default {
 
         dayGridWeekButton.addEventListener('click', () => {
             this.calendarOptions.events = this.modifiedEvents;
+            // document.querySelector()
             // console.log('Clicked on Day Grid Week button');
         });
 
@@ -723,10 +736,10 @@ export default {
     max-width: 70% !important;
 }
 .fc-scrollgrid-sync-table{
-    height: 200px!important;
+    height: 200px;
 }
 .fc-scrollgrid-sync-table td{
-    height: 200px!important;
+    height: 200px;
 }
 .fc-event-title, .fc-event-title-container {
     background: none !important; /* Use !important to override any existing styles */

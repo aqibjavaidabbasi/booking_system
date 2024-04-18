@@ -164,20 +164,21 @@ class MeetingRoomController extends Controller
     {
 
         $accesstoken = '';
-        if ($token != null && $token != 'undefined') {
+        $user = null;
+        if ($token) {
             // chjeck an dverify the token .
 
-            $decryptedToken = Crypt::decryptString($token);
-            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $decryptedToken)->first();
-            dd($user);
 
+            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
             if ($user) {
                 $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
             }
-        }else if ($token == 'undefined') {
+        }
+        else{
 
             $accesstoken = $request->accessCode;
         }
+
         // $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code','347655')->first();
         $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',$accesstoken)->first();
         $data = $meetingRoom?->BookingMeeting->map(function ($meeting) {
@@ -200,6 +201,7 @@ class MeetingRoomController extends Controller
             }
             return [
                 'id' => $meeting->id,
+                'user_id' => $meeting->user_id,
                 'title' => "Booked" . ' (' . Carbon::parse($meeting->start_time)->format('h:i') .
                 ' - ' . Carbon::parse($meeting->end_time)->format('h:i') . ')',
                 "start" => Carbon::parse($meeting->start_time)->format('Y-m-d\TH:i:s'),
@@ -207,13 +209,12 @@ class MeetingRoomController extends Controller
                 'color' => $color,
             ];
         });
-
-        return response()->json($data);
-        if ($meetingRoom) {
-        return response()->json(['valid' => true,'meetingdata'=>$meetingRoom], 200);
-        } else {
-        return response()->json(['valid' => false], 422);
-        }
+        return response()->json(['data'=>$data,'user'=>$user]);
+        // if ($meetingRoom) {
+        // return response()->json(['valid' => true,'meetingdata'=>$meetingRoom], 200);
+        // } else {
+        // return response()->json(['valid' => false], 422);
+        // }
     }
     // storeBooking
     public function storeBooking(Request $request)

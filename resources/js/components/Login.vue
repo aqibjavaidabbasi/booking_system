@@ -1,23 +1,4 @@
-<!-- <template>
-    <div id="login" class="bg-dark">
-      <div id="form">
-        <form @submit.prevent="checkAccessCode">
-          <h2 class="text-center mb-4">Enter Access Code</h2>
-          <input
-            class="form-control form-control-lg"
-            v-model="accessCode"
-            type="text"
-            id="access_code"
-            autocomplete="off"
-            placeholder="Access Code"
-            style="background-color: white"
-          />
-          <p style="color: red">{{ errorMessage }}</p>
-          <button type="submit" class="btn btn-outline-light">Submit</button>
-        </form>
-      </div>
-    </div>
-</template> -->
+
 <template>
 
    <div class="auth-page-wrapper" style="padding-top: 8.5rem !important">
@@ -32,7 +13,7 @@
                                     <img src="assets/images/logo-light.png" alt="" height="20">
                                 </a>
                             </div> -->
-                            <p class="mt-3 fs-15 fw-medium">Booking Meeting</p>
+                            <p class="mt-3 " style="font-size:2rem;">Book Meeting</p>
                         </div>
                     </div>
                 </div>
@@ -53,7 +34,7 @@
                                         <div class="mb-3">
                                             <label for="access_code" class="form-label">Access Code</label>
                                             <input type="number" class="form-control "
-                                                v-model="accessCode" id="access_code" placeholder="Enter access code" autocomplete="off" >
+                                                v-model="accessCode" id="access_code" placeholder="Enter access code" autocomplete="off" @input="clearErrorMessage">
                                                 <p style="color: red">{{ errorMessage }}</p>
                                         </div>
 
@@ -85,21 +66,26 @@ const router = useRouter();
 const accessCode = ref("");
 const errorMessage = ref("");
 const checkAccessCode = async () => {
-try {
-    const response = await axios.post("/api/validate-access-code", {
-      access_code: accessCode.value,
+    try {
+        localStorage.removeItem('accessCode');
+        const response = await axios.post("/api/validate-access-code", {
+        access_code: accessCode.value,
     });
     console.log(response.data.valid);
-    localStorage.setItem('accessCode',response.data?.accessCode)
+
     if (response.data.valid) {
-      router.replace({ name: "Booking" });
+        localStorage.setItem('accessCode',response.data?.accessCode)
+        router.replace({ name: "Booking" });
     } else {
-      console.log(response.data.valid);
+    //   console.log(response.data.valid);
       errorMessage.value = "Invalid access code.";
     }
   } catch (error) {
     errorMessage.value = "Enter valid  access code.";
   }
+};
+const clearErrorMessage = () => {
+    errorMessage.value = "";
 };
 </script>
 
