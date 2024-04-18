@@ -56,26 +56,14 @@
             <h2>Booking Confirmation</h2>
         </div>
         <div class="content">
-
             <h2>Dear {{ $user->name }},</h2>
-            <P>Thank you for your recent action regarding your event booking with us.
-                To verify your identity and ensure the security of your account, please use the following one-time
-                password (OTP) within the next [insert time frame, e.g., 10 minutes]:
-                OTP: {{ $otp }}
-                Please enter this OTP on the respective page to confirm your action.
-                If you did not initiate this action or have any concerns regarding your account security, please contact
-                us immediately at meetinginfo@book.com..
-                Thank you for your cooperation.
-                Best regards,
-            </P>
-            <p><strong>Ikoninc pvt(Ltd)</strong></p>
-
-
-
-
-            <p><strong>Booking Info,</strong></p>
-            <p>Your Otp: {{ $otp }}</p>
-
+            <p>Thank you for your recent action regarding your event booking with us. To verify your identity and ensure
+                the security of your account, please use the following one-time</p>
+            <p style="text-align: center;"><strong>{{ $otp }}</strong></p>
+            <p>Please enter this OTP on the respective page to confirm your action. If you did not initiate this action
+                or have any concerns regarding your account security, please contact us immediately at
+                meetinginfo@book.com. Thank you for your cooperation. Best regards,</p>
+            <p><strong>Company Name (here)</strong></p>
         </div>
         <div class="footer">
             This email is automatically generated. Please do not reply.

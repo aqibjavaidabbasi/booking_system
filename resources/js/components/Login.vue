@@ -65,9 +65,10 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const accessCode = ref("");
 const errorMessage = ref("");
+localStorage.removeItem('accessCode');
 const checkAccessCode = async () => {
     try {
-        localStorage.removeItem('accessCode');
+
         const response = await axios.post("/api/validate-access-code", {
         access_code: accessCode.value,
     });

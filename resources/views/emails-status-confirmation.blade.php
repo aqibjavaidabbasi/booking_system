@@ -41,6 +41,10 @@
             margin-bottom: 15px;
         }
 
+        .button-container {
+            text-align: center;
+        }
+
         .button {
             display: inline-block;
             background-color: #007bff;
@@ -50,6 +54,8 @@
             border-radius: 5px;
             margin-top: 20px;
             /* Added margin */
+            text-align: center;
+            /* Center the button */
         }
 
         .footer {
@@ -67,28 +73,21 @@
             <h2>Booking Confirmation</h2>
         </div>
         <div class="content">
-
             <h2>Dear {{ $user->name }},</h2>
             <p>Thank you for submitting your booking request with us. We have received your request for the following
-                time
-                slot:</p>
+                time slot:</p>
             <ul>
                 <li><strong>Start Time:</strong> {{ $booking->start_time }}</li>
                 <li><strong>End Time:</strong> {{ $booking->end_time }}</li>
             </ul>
-            <p>
-                Please note that your booking is currently pending confirmation. Once your slot is confirmed, you will
-                receive a confirmation email with all the necessary details.
-                If you need to make any changes to or cancel your booking, please use the following link:
-            </p>
-            <p>
-                <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>.
-            </p>
-            <p>
-                We appreciate your trust in our services and look forward to serving you soon.
-                Best regards,
-            </p>
-            <p><strong>Ikoninc pvt(Ltd)</strong></p>
+            <p>Please note that your booking is currently pending confirmation. Once your slot is confirmed, you will
+                receive a confirmation email with all the necessary details. If you need to make any changes to or
+                cancel your booking, please use the following link:</p>
+            <div class="button-container">
+                <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>
+            </div>
+            <p>We appreciate your trust in our services and look forward to serving you soon. Best regards,</p>
+            <p><strong>Company Name (here)</strong></p>
         </div>
         <div class="footer">
             This email is automatically generated. Please do not reply.

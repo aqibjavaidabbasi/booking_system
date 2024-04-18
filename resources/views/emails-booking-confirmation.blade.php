@@ -68,7 +68,7 @@
                 meetinginfo@book.com.
                 Thank you for choosing us for your event needs. We appreciate your understanding and cooperation.
                 Best regards</p>
-            <p><strong>Ikoninc pvt(Ltd)</strong></p>
+            <p><strong>Company Name (here)</strong></p>
 
         </div>
         <div class="footer">

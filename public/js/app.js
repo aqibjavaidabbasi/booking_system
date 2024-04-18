@@ -20802,7 +20802,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         accesscode: ''
       },
       // delet event
-      selectedStatus: '',
       updateventData: {
         eventid: '',
         description: '',
@@ -20826,6 +20825,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         },
         weekends: false,
         events: [],
+        eventMouseEnter: this.handleEventMouseEnter,
+        eventMouseLeave: this.handleEventMouseLeave,
         dateClick: this.handleDateClick,
         eventClick: this.handleEventClick,
         eventClassNames: this.getEventClassNames,
@@ -20846,6 +20847,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     };
   },
   methods: {
+    handleEventMouseEnter: function handleEventMouseEnter(info) {
+      info.el.style.cursor = "pointer";
+    },
+    handleEventMouseLeave: function handleEventMouseLeave(info) {
+      info.el.style.cursor = "";
+    },
     handleDateClick: function handleDateClick(info) {
       this.formsbuttons = true;
       this.isSubmitting = false;
@@ -20870,7 +20877,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       if ((info === null || info === void 0 || (_info$event = info.event) === null || _info$event === void 0 || (_info$event = _info$event._def) === null || _info$event === void 0 || (_info$event = _info$event.extendedProps) === null || _info$event === void 0 ? void 0 : _info$event.user_id) != ((_this$user = this.user) === null || _this$user === void 0 ? void 0 : _this$user.id)) {
         return;
       }
-
+      this.otp = false;
       // Extract start and end times from the title string
       var title = info.event._def.title;
       var _title$match$slice = title.match(/\(([^-]+) - ([^\)]+)\)/).slice(1),
@@ -20904,6 +20911,26 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       this.eventmodal = false;
       this.updatevent = false;
     },
+    // cancel booking
+    cancelBooking: function cancelBooking() {
+      var _this = this;
+      axios__WEBPACK_IMPORTED_MODULE_0___default().get("/api/cancel-booking/".concat(this.updateventData.eventid)).then(function (response) {
+        if (response.data.valid) {
+          _this.message = "Booking cancelled successfully";
+          _this.showToaster(_this.message);
+          _this.fetchMeetingData();
+          _this.eventmodal = false;
+        } else {
+          _this.message = "Booking not found or already cancelled";
+          _this.showToaster(_this.message);
+        }
+      })["catch"](function (error) {
+        console.error("Error cancelling booking:", error);
+        _this.message = "Something went wrong. Please try again.";
+        _this.showToaster(_this.message);
+        _this.closeModal();
+      });
+    },
     showotp: function showotp() {
       // Close Bootstrap modal
       this.hideshowotp = false, this.submitbtn = true, this.beforeotp = false;
@@ -20918,6 +20945,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         // Handle error if needed
       });
     },
+    //
     getEventClassNames: function getEventClassNames(_ref) {
       var event = _ref.event;
       if (event.classNames) {
@@ -20930,7 +20958,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     },
     fetchMeetingData: function fetchMeetingData() {
       var _arguments = arguments,
-        _this = this;
+        _this2 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
         var token, urlParts, tokenIndex, tokenFromUrl, apiUrl, _response$data, accessCode, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -20955,12 +20983,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               return axios__WEBPACK_IMPORTED_MODULE_0___default().get(apiUrl);
             case 12:
               response = _context.sent;
-              _this.user = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.user;
+              _this2.user = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.user;
               // Process original event data
-              _this.originalEvents = response.data.data;
+              _this2.originalEvents = response.data.data;
               console.log("check data:", response.data.data);
               // Process modified event data (with time discarded)
-              _this.modifiedEvents = response.data.data.map(function (event) {
+              _this2.modifiedEvents = response.data.data.map(function (event) {
                 return {
                   date: event.start.substring(0, 10),
                   start: event.start.substring(0, 10),
@@ -20975,7 +21003,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               });
               // Set default events to modifiedEvents
 
-              _this.calendarOptions.events = _this.modifiedEvents;
+              _this2.calendarOptions.events = _this2.modifiedEvents;
               _context.next = 21;
               break;
             case 20:
@@ -21002,34 +21030,34 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     },
     //
     submitbooking: function submitbooking() {
-      var _this2 = this;
+      var _this3 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
         var accessCode, response;
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
               _context2.prev = 0;
-              _this2.isSubmitting = true;
-              _this2.showMessage = false;
-              _this2.formsbuttons = false;
+              _this3.isSubmitting = true;
+              _this3.showMessage = false;
+              _this3.formsbuttons = false;
               accessCode = localStorage.getItem('accessCode');
-              _this2.formData.accesscode = accessCode;
+              _this3.formData.accesscode = accessCode;
               _context2.next = 8;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/store-booking", _this2.formData);
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/store-booking", _this3.formData);
             case 8:
               response = _context2.sent;
               console.log("code check ka", response.data.code);
               // Check the response status instead of directly accessing `response.code`
               if (response.data.code === 200) {
-                _this2.message = response.data.message;
-                _this2.showToaster(_this2.message);
-                _this2.fetchMeetingData();
-                _this2.eventmodal = false;
+                _this3.message = response.data.message;
+                _this3.showToaster(_this3.message);
+                _this3.fetchMeetingData();
+                _this3.eventmodal = false;
               } else if (response.data.code === 404) {
-                _this2.formsbuttons = true;
-                _this2.isSubmitting = false;
-                _this2.message = response.data.message;
-                _this2.showToaster(_this2.message);
+                _this3.formsbuttons = true;
+                _this3.isSubmitting = false;
+                _this3.message = response.data.message;
+                _this3.showToaster(_this3.message);
               }
               _context2.next = 17;
               break;
@@ -21037,8 +21065,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               _context2.prev = 13;
               _context2.t0 = _context2["catch"](0);
               // this.eventmodal = false;
-              _this2.isSubmitting = false;
-              _this2.showToaster("something went wrong try again!.");
+              _this3.isSubmitting = false;
+              _this3.showToaster("something went wrong try again!.");
               // console.log("Error submitting booking:", error);
             case 17:
             case "end":
@@ -21059,7 +21087,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     },
     //update  event
     updateEvent: function updateEvent() {
-      var _this3 = this;
+      var _this4 = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
         var response;
         return _regeneratorRuntime().wrap(function _callee3$(_context3) {
@@ -21068,31 +21096,30 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               _context3.prev = 0;
               _context3.next = 3;
               return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/validate-auth-code", {
-                access_code: _this3.deleteCode,
-                eventid: _this3.updateventData.eventid,
-                eventDate: _this3.updateventData.eventDate,
-                startTime: _this3.updateventData.startTime,
-                endTime: _this3.updateventData.endTime,
-                eventstatus: _this3.selectedStatus
+                access_code: _this4.deleteCode,
+                eventid: _this4.updateventData.eventid,
+                eventDate: _this4.updateventData.eventDate,
+                startTime: _this4.updateventData.startTime,
+                endTime: _this4.updateventData.endTime
               });
             case 3:
               response = _context3.sent;
               if (response.data.valid) {
                 // If access code is valid, delete the event
-                _this3.closeModal();
-                _this3.fetchMeetingData(); // Refresh the calendar
+                _this4.closeModal();
+                _this4.fetchMeetingData(); // Refresh the calendar
               } else {
                 // If access code is invalid, set the deleteError message
-                _this3.deleteError = "Invalid otp code";
+                _this4.deleteError = "Invalid otp code";
               }
-              _context3.next = 11;
+              _context3.next = 10;
               break;
             case 7:
               _context3.prev = 7;
               _context3.t0 = _context3["catch"](0);
-              console.error("Error deleting event:", _context3.t0);
-              _this3.deleteError = "Enter valid  otp code.";
-            case 11:
+              // console.error("Error deleting event:", error);
+              _this4.deleteError = "Enter valid  otp code.";
+            case 10:
             case "end":
               return _context3.stop();
           }
@@ -21101,16 +21128,14 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     }
   },
   mounted: function mounted() {
-    var _this4 = this;
+    var _this5 = this;
     // Check if access code is stored in localStorage
-    var accessCode = localStorage.getItem('accessCode');
-    if (!accessCode) {
-      // Redirect to the login page
-      this.$router.push({
-        name: 'Login'
-      });
-      return;
-    }
+    // const accessCode = localStorage.getItem('accessCode');
+    // if (!accessCode) {
+    //     // Redirect to the login page
+    //     this.$router.push({ name: 'Login' });
+    //     return;
+    // }
     this.fetchMeetingData(); // Call fetchMeetingData directly
     var prevButton = document.querySelector('.fc-prev-button');
     var nextButton = document.querySelector('.fc-next-button');
@@ -21128,16 +21153,16 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // console.log('Clicked on Today button');
     });
     dayGridMonthButton.addEventListener('click', function () {
-      _this4.calendarOptions.events = _this4.modifiedEvents;
+      _this5.calendarOptions.events = _this5.modifiedEvents;
       // console.log('Clicked on Day Grid Month button');
     });
     dayGridWeekButton.addEventListener('click', function () {
-      _this4.calendarOptions.events = _this4.modifiedEvents;
+      _this5.calendarOptions.events = _this5.modifiedEvents;
       // document.querySelector()
       // console.log('Clicked on Day Grid Week button');
     });
     timeGridDayButton.addEventListener('click', function () {
-      _this4.calendarOptions.events = _this4.originalEvents;
+      _this5.calendarOptions.events = _this5.originalEvents;
       // console.log('Clicked on Time Grid Day button',this.originalEvents);
     });
   }
@@ -21175,6 +21200,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var router = (0,vue_router__WEBPACK_IMPORTED_MODULE_2__.useRouter)();
     var accessCode = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("");
     var errorMessage = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)("");
+    localStorage.removeItem('accessCode');
     var checkAccessCode = /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
         var response, _response$data;
@@ -21182,12 +21208,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) switch (_context.prev = _context.next) {
             case 0:
               _context.prev = 0;
-              localStorage.removeItem('accessCode');
-              _context.next = 4;
+              _context.next = 3;
               return axios__WEBPACK_IMPORTED_MODULE_1___default().post("/api/validate-access-code", {
                 access_code: accessCode.value
               });
-            case 4:
+            case 3:
               response = _context.sent;
               console.log(response.data.valid);
               if (response.data.valid) {
@@ -21199,17 +21224,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 //   console.log(response.data.valid);
                 errorMessage.value = "Invalid access code.";
               }
-              _context.next = 12;
+              _context.next = 11;
               break;
-            case 9:
-              _context.prev = 9;
+            case 8:
+              _context.prev = 8;
               _context.t0 = _context["catch"](0);
               errorMessage.value = "Enter valid  access code.";
-            case 12:
+            case 11:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[0, 9]]);
+        }, _callee, null, [[0, 8]]);
       }));
       return function checkAccessCode() {
         return _ref2.apply(this, arguments);
@@ -21403,90 +21428,68 @@ var _hoisted_40 = {
   "class": "row"
 };
 var _hoisted_41 = {
-  "class": "col-md-6"
+  "class": "mb-3"
 };
 var _hoisted_42 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "eventdate",
   "class": "col-form-label"
-}, "Select Status:", -1 /* HOISTED */);
-var _hoisted_43 = {
-  "class": "input-group"
-};
-var _hoisted_44 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-  "class": "input-group-text",
-  "for": "eventystatus"
-}, "Status", -1 /* HOISTED */);
-var _hoisted_45 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
-  disabled: "",
-  selected: ""
-}, "Select Status", -1 /* HOISTED */);
-var _hoisted_46 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
-  value: "Cancel"
-}, "Cancel", -1 /* HOISTED */);
-var _hoisted_47 = [_hoisted_45, _hoisted_46];
-var _hoisted_48 = {
-  "class": "mb-3"
-};
-var _hoisted_49 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-  "for": "eventdate",
-  "class": "col-form-label"
 }, "Event Date:", -1 /* HOISTED */);
-var _hoisted_50 = {
+var _hoisted_43 = {
   "class": "col-md-6"
 };
-var _hoisted_51 = {
+var _hoisted_44 = {
   "class": "mb-3"
 };
-var _hoisted_52 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_45 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "starttime",
   "class": "col-form-label"
 }, "Start Time:", -1 /* HOISTED */);
-var _hoisted_53 = {
+var _hoisted_46 = {
   "class": "col-md-6"
 };
-var _hoisted_54 = {
+var _hoisted_47 = {
   "class": "mb-3"
 };
-var _hoisted_55 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_48 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "endtime",
   "class": "col-form-label"
 }, "End Time:", -1 /* HOISTED */);
-var _hoisted_56 = {
+var _hoisted_49 = {
   "class": "mb-3"
 };
-var _hoisted_57 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_50 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "description",
   "class": "col-form-label"
 }, "Description:", -1 /* HOISTED */);
-var _hoisted_58 = {
+var _hoisted_51 = {
   key: 1,
   "class": "mb-3"
 };
-var _hoisted_59 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_52 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "eventdate",
   "class": "col-form-label"
 }, "Enter OTP:", -1 /* HOISTED */);
-var _hoisted_60 = {
+var _hoisted_53 = {
   key: 0,
   style: {
     "color": "red"
   },
   "class": "error-message"
 };
-var _hoisted_61 = {
+var _hoisted_54 = {
   key: 2,
   "class": "alert alert-success",
   role: "alert"
 };
-var _hoisted_62 = {
+var _hoisted_55 = {
   "class": "modal-footer"
 };
-var _hoisted_63 = {
+var _hoisted_56 = {
   key: 1,
   type: "submit",
   "class": "btn btn-outline-success"
 };
-var _hoisted_64 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_57 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "app-menu navbar-menu border-end d-none"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" LOGO "), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "navbar-brand-box"
@@ -21695,40 +21698,34 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onSubmit: _cache[21] || (_cache[21] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function () {
       return $options.updateEvent && $options.updateEvent.apply($options, arguments);
     }, ["prevent"]))
-  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_39, [$data.beforeotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_40, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_41, [_hoisted_42, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_43, [_hoisted_44, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
-    "class": "form-select",
-    id: "eventystatus",
-    "onUpdate:modelValue": _cache[11] || (_cache[11] = function ($event) {
-      return $data.selectedStatus = $event;
-    })
-  }, [].concat(_hoisted_47), 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.selectedStatus]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_39, [$data.beforeotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_40, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_41, [_hoisted_42, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "date",
     "class": "form-control transparent-input",
     id: "eventdate",
-    "onUpdate:modelValue": _cache[12] || (_cache[12] = function ($event) {
+    "onUpdate:modelValue": _cache[11] || (_cache[11] = function ($event) {
       return $data.updateventData.eventDate = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventDate]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_51, [_hoisted_52, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventDate]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_43, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [_hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "time",
     "class": "form-control transparent-input",
     id: "starttime",
-    "onUpdate:modelValue": _cache[13] || (_cache[13] = function ($event) {
+    "onUpdate:modelValue": _cache[12] || (_cache[12] = function ($event) {
       return $data.updateventData.startTime = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.startTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_53, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_54, [_hoisted_55, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.startTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_47, [_hoisted_48, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "time",
     "class": "form-control transparent-input",
     id: "endtime",
-    "onUpdate:modelValue": _cache[14] || (_cache[14] = function ($event) {
+    "onUpdate:modelValue": _cache[13] || (_cache[13] = function ($event) {
       return $data.updateventData.endTime = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.endTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [_hoisted_57, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.endTime]])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_49, [_hoisted_50, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
     "class": "form-control transparent-input bg-transparent",
     id: "description",
-    "onUpdate:modelValue": _cache[15] || (_cache[15] = function ($event) {
+    "onUpdate:modelValue": _cache[14] || (_cache[14] = function ($event) {
       return $data.updateventData.description = $event;
     }),
-    onFocus: _cache[16] || (_cache[16] = function () {
+    onFocus: _cache[15] || (_cache[15] = function () {
       return $options.clearField && $options.clearField.apply($options, arguments);
     }),
     autocomplete: "off"
@@ -21736,31 +21733,36 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     type: "text",
     "class": "form-control transparent-input",
     id: "eventid",
-    "onUpdate:modelValue": _cache[17] || (_cache[17] = function ($event) {
+    "onUpdate:modelValue": _cache[16] || (_cache[16] = function ($event) {
       return $data.updateventData.eventid = $event;
     }),
     hidden: ""
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventid]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" otp input "), $data.otp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_58, [_hoisted_59, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.updateventData.eventid]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" otp input "), $data.otp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_51, [_hoisted_52, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "number",
     name: "access_code",
     "class": "form-control transparent-input",
-    "onUpdate:modelValue": _cache[18] || (_cache[18] = function ($event) {
+    "onUpdate:modelValue": _cache[17] || (_cache[17] = function ($event) {
       return _ctx.deleteCode = $event;
     }),
     placeholder: "Enter code"
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, _ctx.deleteCode]]), $data.deleteError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_60, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.deleteError), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.showMessageotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_61, " Please check the email OTP sent to your email. ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_62, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, _ctx.deleteCode]]), $data.deleteError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_53, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.deleteError), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.showMessageotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_54, " Please check the email OTP sent to your email. ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_55, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     type: "button",
     "class": "btn btn-outline-danger",
-    onClick: _cache[19] || (_cache[19] = function () {
+    onClick: _cache[18] || (_cache[18] = function () {
       return $options.closeModal && $options.closeModal.apply($options, arguments);
     })
-  }, " Close "), $data.hideshowotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("a", {
+  }, " Close "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    "class": "btn btn-outline-danger",
+    onClick: _cache[19] || (_cache[19] = function () {
+      return $options.cancelBooking && $options.cancelBooking.apply($options, arguments);
+    })
+  }, " Cancel Booking "), $data.hideshowotp ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("a", {
     key: 0,
     "class": "btn btn-outline-success",
     onClick: _cache[20] || (_cache[20] = function () {
       return $options.showotp && $options.showotp.apply($options, arguments);
     })
-  }, " Update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.submitbtn ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", _hoisted_63, " update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 32 /* NEED_HYDRATION */)])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end delete modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" importent "), _hoisted_64, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end importent ")]);
+  }, " Update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.submitbtn ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", _hoisted_56, " update Booking ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 32 /* NEED_HYDRATION */)])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end delete modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" importent "), _hoisted_57, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" end importent ")]);
 }
 
 /***/ }),

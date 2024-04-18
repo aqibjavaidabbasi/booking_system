@@ -161,16 +161,6 @@
                     <form @submit.prevent="updateEvent">
                         <div class="modal-body">
                             <div class="row" v-if="beforeotp">
-                                <div class="col-md-6">
-                                    <label for="eventdate" class="col-form-label">Select Status:</label>
-                                        <div class="input-group">
-                                            <label class="input-group-text" for="eventystatus">Status</label>
-                                            <select class="form-select" id="eventystatus" v-model="selectedStatus">
-                                               <option disabled selected>Select Status</option>
-                                                <option value="Cancel">Cancel</option>
-                                            </select>
-                                        </div>
-                                </div>
                                 <div class="mb-3">
                                     <label for="eventdate" class="col-form-label">Event Date:</label>
                                     <input type="date" class="form-control transparent-input" id="eventdate" v-model="updateventData.eventDate"  />
@@ -208,6 +198,7 @@
                         </div>
 
                         <div class="modal-footer">
+
                             <button
                                 type="button"
                                 class="btn btn-outline-danger"
@@ -215,9 +206,13 @@
                             >
                                 Close
                             </button>
+                             <a  class="btn btn-outline-danger" @click="cancelBooking" >
+                               Cancel Booking
+                            </a>
                             <a  class="btn btn-outline-success" @click="showotp" v-if="hideshowotp">
                                Update Booking
                             </a>
+
                             <button type="submit" class="btn btn-outline-success" v-if="submitbtn">
                                 update Booking
                             </button>
@@ -427,7 +422,6 @@ export default {
             },
 
             // delet event
-            selectedStatus: '',
             updateventData: {
                 eventid: '',
                 description: '',
@@ -447,6 +441,8 @@ export default {
                 titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
                 weekends: false,
                 events: [],
+                eventMouseEnter: this.handleEventMouseEnter,
+                eventMouseLeave: this.handleEventMouseLeave,
                 dateClick: this.handleDateClick,
                 eventClick: this.handleEventClick,
                 eventClassNames: this.getEventClassNames,
@@ -461,12 +457,17 @@ export default {
                     center: 'title',
                     right: 'dayGridMonth,dayGridWeek,timeGridDay', // Allow switching between different views
                 },
-
             },
             // fetchMeetingData: this.fetchMeetingData.bind(this),
         };
     },
     methods: {
+        handleEventMouseEnter(info) {
+            info.el.style.cursor = "pointer";
+        },
+        handleEventMouseLeave(info) {
+            info.el.style.cursor = "";
+        },
         handleDateClick(info) {
 
                 this.formsbuttons = true;
@@ -493,11 +494,11 @@ export default {
         },
         handleEventClick(info) {
 
-                if(info?.event?._def?.extendedProps?.user_id != this.user?.id)
-                {
-                    return;
-                }
-
+            if(info?.event?._def?.extendedProps?.user_id != this.user?.id)
+            {
+                return;
+            }
+            this.otp = false;
             // Extract start and end times from the title string
             const title = info.event._def.title;
             const [startTimeStr, endTimeStr] = title.match(/\(([^-]+) - ([^\)]+)\)/).slice(1);
@@ -529,11 +530,31 @@ export default {
            this.eventmodal = false;
            this.updatevent = false;
         },
+        // cancel booking
+       cancelBooking() {
+            axios.get(`/api/cancel-booking/${this.updateventData.eventid}`)
+            .then(response => {
+                if (response.data.valid) {
+                    this.message = "Booking cancelled successfully";
+                    this.showToaster(this.message);
+                    this.fetchMeetingData();
+                    this.eventmodal = false;
+                } else {
+                    this.message = "Booking not found or already cancelled";
+                    this.showToaster(this.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error cancelling booking:", error);
+                this.message = "Something went wrong. Please try again.";
+                this.showToaster(this.message);
+                this.closeModal();
+            });
+        },
         showotp() {
             // Close Bootstrap modal
             this.hideshowotp = false,
             this.submitbtn = true,
-
             this.beforeotp = false;
             this.otp = true;
             this.showMessageotp = true;
@@ -544,10 +565,12 @@ export default {
                     // Handle response if needed
                 })
                 .catch(error => {
+
                     console.error("Error sending OTP:", error);
                     // Handle error if needed
                 });
         },
+        //
         getEventClassNames({ event }) {
             if (event.classNames) {
                 return event.classNames;
@@ -663,7 +686,6 @@ export default {
                     eventDate: this.updateventData.eventDate,
                     startTime: this.updateventData.startTime,
                     endTime: this.updateventData.endTime,
-                    eventstatus: this.selectedStatus
 
                 });
 
@@ -676,7 +698,7 @@ export default {
                     this.deleteError = "Invalid otp code";
                 }
             } catch (error) {
-                console.error("Error deleting event:", error);
+                // console.error("Error deleting event:", error);
                 this.deleteError = "Enter valid  otp code.";
             }
         },
@@ -684,12 +706,12 @@ export default {
     },
     mounted() {
         // Check if access code is stored in localStorage
-        const accessCode = localStorage.getItem('accessCode');
-        if (!accessCode) {
-            // Redirect to the login page
-            this.$router.push({ name: 'Login' });
-            return;
-        }
+        // const accessCode = localStorage.getItem('accessCode');
+        // if (!accessCode) {
+        //     // Redirect to the login page
+        //     this.$router.push({ name: 'Login' });
+        //     return;
+        // }
         this.fetchMeetingData(); // Call fetchMeetingData directly
         const prevButton = document.querySelector('.fc-prev-button');
         const nextButton = document.querySelector('.fc-next-button');

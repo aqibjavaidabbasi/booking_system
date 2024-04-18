@@ -27,4 +27,5 @@ Route::post('/validate-access-code', [MeetingRoomController::class, 'validateAcc
 Route::post('/validate-auth-code', [MeetingRoomController::class, 'checkAuthCode']);
 Route::post('/store-booking', [MeetingRoomController::class, 'storeBooking']);
 Route::get('/send-otp/{id?}', [MeetingRoomController::class, 'sendotp']);
+Route::get('/cancel-booking/{id?}', [MeetingRoomController::class, 'cancelbooking']);
 Route::get('/get-meetings-data/{token?}', [MeetingRoomController::class, 'getMeetingData']);

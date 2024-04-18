@@ -162,15 +162,17 @@ class MeetingRoomController extends Controller
     // get data
     public function getMeetingData(Request $request ,$token = null)
     {
-
+        // dd("all:",$request->all(),"and token:",$token);
         $accesstoken = '';
         $user = null;
         if ($token) {
             // chjeck an dverify the token .
 
 
-            $user = User::with('BookingMeeting.MeetingRoom')->where('auth_code', $token)->first();
+            $user = User::where('auth_code', $token)->first();
+
             if ($user) {
+                // dd($user->BookingMeeting->MeetingRoom->access_code);
                 $accesstoken = $user->BookingMeeting->MeetingRoom->access_code;
             }
         }
@@ -269,8 +271,7 @@ class MeetingRoomController extends Controller
                 Mail::to($user->email)->send(new SendNotificationEmail($user,$booking));
                 // Mail::to($user->email)->send(new BookingConfirmation($booking));
              return response()->json([
-             'message' => 'Verification email sent to your email.
-             the booking',
+             'message' => 'Verification email sent to your email.',
              'code' => 200
              ], 200);
 
@@ -318,6 +319,17 @@ class MeetingRoomController extends Controller
     }
     // checking validate code before update and cancel or Delete
     // send otp
+    public function cancelbooking($id)
+    {
+        $booking = BookingMeeting::where('id', $id)->first();
+        if ($booking) {
+        $booking->delete();
+        return response()->json(['valid' => true,'code'=>200], 200);
+        } else {
+        return response()->json(['valid' => false,'code'=>422], 422);
+        }
+    }
+
     public function sendotp($id)
     {
        $booking = BookingMeeting::with('user')->where('id', $id)->first();
@@ -326,6 +338,7 @@ class MeetingRoomController extends Controller
         $otp = mt_rand(100000, 999999);
         session(['otp' => $otp]);
         Mail::to($user->email)->send(new BookingConfirmationOTP($user,$otp));
+
         return response()->json(200);
     }
     public function checkAuthCode(Request $request)
@@ -351,10 +364,7 @@ class MeetingRoomController extends Controller
                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
                 }
-                if($request->eventstatus != null)
-                {
-                    $booking->status = $request->eventstatus;
-                }
+
 
                 $booking->save();
 
