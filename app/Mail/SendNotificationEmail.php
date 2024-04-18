@@ -13,8 +13,7 @@ class SendNotificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-        public $user;
-        public $status;
+        public $user,$booking;
 
         /**
         * Create a new message instance.
@@ -23,17 +22,17 @@ class SendNotificationEmail extends Mailable
         * @param \App\Models\BookingMeeting $booking
         * @return void
         */
-        public function __construct($user,$status)
+        public function __construct($user,$booking)
         {
             $this->user = $user;
-            $this->status = $status;
+              $this->booking = $booking;
         }
 
         public function build()
         {
 
              $address = 'meetinginfo@book.com';
-             $subject = 'Booking Confirmation';
+             $subject = 'Booking Request Confirmation';
              $name = 'Jane Doe';
 
              return $this->view('emails-status-confirmation')
@@ -42,7 +41,7 @@ class SendNotificationEmail extends Mailable
              ->bcc($address, $name)
              ->replyTo($address, $name)
              ->subject($subject)
-             ->with([ 'message' => $this->user ]);
+             ->with([ 'message' => $this->user,$this->booking ]);
 
 
         }

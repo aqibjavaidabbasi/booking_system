@@ -221,13 +221,15 @@ class MeetingRoomController extends Controller
 
         $user = User::where('email',$request->input('email'))->first();
 
-        if (!$user) {
+
+        if ($request->input('email') != null && $user == null)
+        {
             $user = new User();
             $user->name = $request->input('name');
             $user->email = $request->input('email');
 
 
-            if ($user->auth_code == null && $user->auth_code == false) {
+            if ($user->auth_code == null && $user->status == false) {
 
                 $user->status = true;
 
@@ -235,29 +237,63 @@ class MeetingRoomController extends Controller
                  $encryptedAuthCode = Crypt::encryptString($authCode);
                  $user->auth_code = $encryptedAuthCode;
 
-                // send here dynamic code with email
-                Mail::to($user->email)->send(new SendNotificationEmail($user, $user->status));
-            } else {
-                Mail::to($user->email)->send(new SendNotificationEmail($user, $user->status));
             }
-        }
-        $user->save();
-        // new meeting booking
-        $booking = new BookingMeeting();
-        $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code', session()->get('AccessCode'))->first();
 
-        $booking->meeting_room_id = $meetingRoom->id;
-        $booking->user_id = $user->id;
+            $user->save();
+            // new meeting booking
+                $booking = new BookingMeeting();
+                $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code', $request->accesscode)->first();
 
-            $startTime = $request->input('startTime');
-            $endTime = $request->input('endTime');
+                $booking->meeting_room_id = $meetingRoom->id;
+                $booking->user_id = $user->id;
+
+                $startTime = $request->input('startTime');
+                $endTime = $request->input('endTime');
 
             if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $endTime)) {
 
                 // If the input times are already in the desired format
                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
                 $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
-            } else {
+            }
+            else {
+
+                // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
+                $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
+                $booking->end_time = $request->input('eventDate') . ' ' . $endTime . ':00';
+            }
+                $booking->description = $request->input('description');
+
+                $booking->save();
+                Mail::to($user->email)->send(new SendNotificationEmail($user,$booking,));
+                // Mail::to($user->email)->send(new BookingConfirmation($booking));
+             return response()->json([
+             'message' => 'Verification email sent to your email.
+             the booking',
+             'code' => 200
+             ], 200);
+
+        }else if($user->email != null){
+
+            // new meeting booking
+            $booking = new BookingMeeting();
+            $meetingRoom = MeetingRoom::with('BookingMeeting')->where('access_code',
+            $request->accesscode)->first();
+
+            $booking->meeting_room_id = $meetingRoom->id;
+            $booking->user_id = $user->id;
+
+            $startTime = $request->input('startTime');
+            $endTime = $request->input('endTime');
+
+            if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $startTime) && preg_match('/^\d{2}:\d{2}:\d{2}$/',
+            $endTime)) {
+
+            // If the input times are already in the desired format
+            $booking->start_time = $request->input('eventDate') . ' ' . $startTime;
+            $booking->end_time = $request->input('eventDate') . ' ' . $endTime;
+            }
+            else {
 
                 // Append ':00' to the times to ensure they are in the format 'HH:mm:ss'
                 $booking->start_time = $request->input('eventDate') . ' ' . $startTime . ':00';
@@ -267,7 +303,17 @@ class MeetingRoomController extends Controller
 
             $booking->save();
             // Mail::to($user->email)->send(new BookingConfirmation($booking));
-        return response()->json(200);
+            return response()->json([
+            'message' => 'Verification email sent to your email',
+            'code' => 200
+            ], 200);
+        }
+
+        return response()->json([
+        'message' => 'Something went wrong try again!. ',
+        'code' => 400
+        ], 400);
+
     }
     // checking validate code before update and cancel or Delete
     // send otp
