@@ -13,7 +13,7 @@ class BookingConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
 
-        public $booking;
+         public $user,$booking;
 
         /**
         * Create a new message instance.
@@ -22,15 +22,16 @@ class BookingConfirmation extends Mailable
         * @param \App\Models\BookingMeeting $booking
         * @return void
         */
-        public function __construct($booking)
+        public function __construct($user,$booking)
         {
+            $this->user = $user;
             $this->booking = $booking;
         }
 
         public function build()
         {
              $address = 'meetinginfo@book.com';
-             $subject = 'Booking Confirmation';
+             $subject = 'Event Changes Confirmation';
              $name = 'Jane Doe';
 
              return $this->view('emails-booking-confirmation')
@@ -39,7 +40,7 @@ class BookingConfirmation extends Mailable
              ->bcc($address, $name)
              ->replyTo($address, $name)
              ->subject($subject)
-             ->with([ 'message' => $this->booking ]);
+             ->with([ 'message' => $this->user,$this->booking ]);
 
 
         }

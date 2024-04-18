@@ -56,15 +56,20 @@
             <h2>Booking Confirmation</h2>
         </div>
         <div class="content">
-            <p><strong>Booking Info,</strong></p>
-            <p>Your time slot has been booked successfully.</p>
-            <p>Your booking details:</p>
-            <ul>
-                <li><strong>Start Time:</strong> {{ $booking->start_time }}</li>
-                <li><strong>End Time:</strong> {{ $booking->end_time }}</li>
-            </ul>
-            <p>Please note that the link will be sent when the slot has been approved.</p>
-            <p>Thank you!</p>
+
+
+            <h2>Dear {{ $user->name }},</h2>
+            <p>Thank you for reaching out to make changes to your upcoming event booking with us.
+                We have received your request to modify the details of your booking. Our team is currently reviewing
+                your changes and will confirm them as soon as possible.
+                Please note that your event details are subject to availability and our team will do their best to
+                accommodate your request.
+                If you have any further questions or concerns, please don't hesitate to contact us at
+                meetinginfo@book.com.
+                Thank you for choosing us for your event needs. We appreciate your understanding and cooperation.
+                Best regards</p>
+            <p><strong>Ikoninc pvt(Ltd)</strong></p>
+
         </div>
         <div class="footer">
             This email is automatically generated. Please do not reply.

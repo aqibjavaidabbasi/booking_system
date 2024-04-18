@@ -69,18 +69,25 @@
         <div class="content">
 
             <h2>Dear {{ $user->name }},</h2>
-            Thank you for submitting your booking request with us. We have received your request for the following time
-            slot:
+            <p>Thank you for submitting your booking request with us. We have received your request for the following
+                time
+                slot:</p>
             <ul>
                 <li><strong>Start Time:</strong> {{ $booking->start_time }}</li>
                 <li><strong>End Time:</strong> {{ $booking->end_time }}</li>
             </ul>
-            Please note that your booking is currently pending confirmation. Once your slot is confirmed, you will
-            receive a confirmation email with all the necessary details.
-            If you need to make any changes to or cancel your booking, please use the following link:
-            <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>.
-            We appreciate your trust in our services and look forward to serving you soon.
-            Best regards,
+            <p>
+                Please note that your booking is currently pending confirmation. Once your slot is confirmed, you will
+                receive a confirmation email with all the necessary details.
+                If you need to make any changes to or cancel your booking, please use the following link:
+            </p>
+            <p>
+                <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>.
+            </p>
+            <p>
+                We appreciate your trust in our services and look forward to serving you soon.
+                Best regards,
+            </p>
             <p><strong>Ikoninc pvt(Ltd)</strong></p>
         </div>
         <div class="footer">

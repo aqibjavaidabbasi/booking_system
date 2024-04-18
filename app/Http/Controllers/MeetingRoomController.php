@@ -265,7 +265,7 @@ class MeetingRoomController extends Controller
                 $booking->description = $request->input('description');
 
                 $booking->save();
-                Mail::to($user->email)->send(new SendNotificationEmail($user,$booking,));
+                Mail::to($user->email)->send(new SendNotificationEmail($user,$booking));
                 // Mail::to($user->email)->send(new BookingConfirmation($booking));
              return response()->json([
              'message' => 'Verification email sent to your email.
@@ -302,7 +302,7 @@ class MeetingRoomController extends Controller
             $booking->description = $request->input('description');
 
             $booking->save();
-            // Mail::to($user->email)->send(new BookingConfirmation($booking));
+            Mail::to($user->email)->send(new SendNotificationEmail($user,$booking));
             return response()->json([
             'message' => 'Verification email sent to your email',
             'code' => 200
@@ -324,15 +324,13 @@ class MeetingRoomController extends Controller
 
         $otp = mt_rand(100000, 999999);
         session(['otp' => $otp]);
-        Mail::to($user->email)->send(new BookingConfirmationOTP($otp));
+        Mail::to($user->email)->send(new BookingConfirmationOTP($user,$otp));
         return response()->json(200);
     }
     public function checkAuthCode(Request $request)
     {
-        $otp = session('otp');
-
-
-           $booking = BookingMeeting::where('id', $request->eventid)->first();
+            $otp = session('otp');
+            $booking = BookingMeeting::where('id', $request->eventid)->first();
 
         if ($booking != null && $request->access_code == session('otp')) {
                 //
@@ -361,7 +359,7 @@ class MeetingRoomController extends Controller
 
                 // find the user and send the notification email
                 $user = User::with('BookingMeeting.MeetingRoom')->where('id',$booking->user_id)->first();
-                // Mail::to($user->email)->send(new BookingConfirmation($booking));
+                Mail::to($user->email)->send(new BookingConfirmation($user,$booking));
 
             return response()->json(['valid' => true], 200);
         } else {
