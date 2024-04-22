@@ -389,6 +389,7 @@ import axios from "axios";
 import timeGridPlugin from '@fullcalendar/timegrid'
 import moment from 'moment';
 import Toastify from 'toastify-js';
+
 export default {
     components: {
         FullCalendar,
@@ -469,7 +470,16 @@ export default {
             info.el.style.cursor = "";
         },
         handleDateClick(info) {
-
+            const token = this.$route.params.token;
+            // if (token) {
+            //     // Token exists, do something
+            //     // teh hide the name and email field
+            //     console.log('Token exists:', token);
+            // } else {
+            //     // Token doesn't exist, do something else
+            //     // then user can enter the name , and email
+            //     console.log('Token does not exist in the URL');
+            // }
                 this.formsbuttons = true;
                 this.isSubmitting = false;
                 this.eventmodal = false;
@@ -601,7 +611,12 @@ export default {
                     this.user = response.data?.user;
                     // Process original event data
                     this.originalEvents = response.data.data;
-                    console.log("check data:", response.data.data);
+
+                    // Redirect to login page if data is null or empty
+                    if (!response.data.data) {
+                        this.$router.push({ name: 'Login' });
+                        // return;
+                    }
                     // Process modified event data (with time discarded)
                     this.modifiedEvents = response.data.data.map(event => ({
                         date: event.start.substring(0, 10),
@@ -646,12 +661,12 @@ export default {
                 this.formData.accesscode = accessCode;
 
                 const response = await axios.post("/api/store-booking", this.formData);
-                console.log("code check ka",response.data.code);
                 // Check the response status instead of directly accessing `response.code`
                     if (response.data.code === 200) {
                         this.message = response.data.message;
                         this.showToaster(this.message);
-                         this.fetchMeetingData();
+                        // this.fetchMeetingData();
+                        console.log(this.fetchMeetingData());
                         this.eventmodal = false;
                     } else if (response.data.code === 404) {
                         this.formsbuttons = true;
@@ -706,43 +721,38 @@ export default {
     },
     mounted() {
         // Check if access code is stored in localStorage
-        // const accessCode = localStorage.getItem('accessCode');
-        // if (!accessCode) {
-        //     // Redirect to the login page
-        //     this.$router.push({ name: 'Login' });
-        //     return;
-        // }
-        this.fetchMeetingData(); // Call fetchMeetingData directly
+        const accessCode = localStorage.getItem('accessCode');
+        const storedDate = localStorage.getItem('currentDate');
+        const currentDate = new Date().toLocaleDateString();
+        if (storedDate !== currentDate || !accessCode) {
+            // Redirect to the login page
+            this.$router.push({ name: 'Login' });
+        }
+        this.fetchMeetingData();
         const prevButton = document.querySelector('.fc-prev-button');
         const nextButton = document.querySelector('.fc-next-button');
         const todayButton = document.querySelector('.fc-today-button');
         const dayGridMonthButton = document.querySelector('.fc-dayGridMonth-button');
         const dayGridWeekButton = document.querySelector('.fc-dayGridWeek-button');
         const timeGridDayButton = document.querySelector('.fc-timeGridDay-button');
-
         prevButton.addEventListener('click', () => {
             // console.log('Clicked on Previous button');
         });
-
         nextButton.addEventListener('click', () => {
             // console.log('Clicked on Next button');
         });
-
         todayButton.addEventListener('click', () => {
             // console.log('Clicked on Today button');
         });
-
         dayGridMonthButton.addEventListener('click', () => {
             this.calendarOptions.events = this.modifiedEvents;
             // console.log('Clicked on Day Grid Month button');
         });
-
         dayGridWeekButton.addEventListener('click', () => {
             this.calendarOptions.events = this.modifiedEvents;
             // document.querySelector()
             // console.log('Clicked on Day Grid Week button');
         });
-
             timeGridDayButton.addEventListener('click', () => {
             this.calendarOptions.events = this.originalEvents;
             // console.log('Clicked on Time Grid Day button',this.originalEvents);

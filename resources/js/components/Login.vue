@@ -65,28 +65,34 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const accessCode = ref("");
 const errorMessage = ref("");
+
 localStorage.removeItem('accessCode');
+
 const checkAccessCode = async () => {
     try {
-
         const response = await axios.post("/api/validate-access-code", {
         access_code: accessCode.value,
     });
     console.log(response.data.valid);
 
-    if (response.data.valid) {
-        localStorage.setItem('accessCode',response.data?.accessCode)
+        if (response.data.valid) {
+        // store access token into local storage
+        localStorage.setItem('accessCode', response.data?.accessCode);
+        // set the current date into local storage
+        const currentDate = new Date().toLocaleDateString();
+            localStorage.setItem('currentDate', currentDate);
+
         router.replace({ name: "Booking" });
     } else {
-    //   console.log(response.data.valid);
-      errorMessage.value = "Invalid access code.";
+        //   console.log(response.data.valid);
+        errorMessage.value = "Invalid access code.";
     }
   } catch (error) {
     errorMessage.value = "Enter valid  access code.";
   }
 };
-const clearErrorMessage = () => {
-    errorMessage.value = "";
+    const clearErrorMessage = () => {
+        errorMessage.value = "";
 };
 </script>
 
