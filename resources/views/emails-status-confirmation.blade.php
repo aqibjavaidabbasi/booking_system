@@ -83,9 +83,12 @@
             <p>Please note that your booking is currently pending confirmation. Once your slot is confirmed, you will
                 receive a confirmation email with all the necessary details. If you need to make any changes to or
                 cancel your booking, please use the following link:</p>
-            <div class="button-container">
-                <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>
-            </div>
+            @if ($forfirsttime != 0)
+                <div class="button-container">
+                    <a class="button" href="http://127.0.0.1:8000/booking/{{ $user->auth_code }}">Book Now</a>
+                </div>
+            @endif
+
             <p>We appreciate your trust in our services and look forward to serving you soon. Best regards,</p>
             <p><strong>Company Name (here)</strong></p>
         </div>

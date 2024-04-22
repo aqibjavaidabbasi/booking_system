@@ -20854,6 +20854,16 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       info.el.style.cursor = "";
     },
     handleDateClick: function handleDateClick(info) {
+      var token = this.$route.params.token;
+      // if (token) {
+      //     // Token exists, do something
+      //     // teh hide the name and email field
+      //     console.log('Token exists:', token);
+      // } else {
+      //     // Token doesn't exist, do something else
+      //     // then user can enter the name , and email
+      //     console.log('Token does not exist in the URL');
+      // }
       this.formsbuttons = true;
       this.isSubmitting = false;
       this.eventmodal = false;
@@ -20986,7 +20996,14 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               _this2.user = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.user;
               // Process original event data
               _this2.originalEvents = response.data.data;
-              console.log("check data:", response.data.data);
+
+              // Redirect to login page if data is null or empty
+              if (!response.data.data) {
+                _this2.$router.push({
+                  name: 'Login'
+                });
+                // return;
+              }
               // Process modified event data (with time discarded)
               _this2.modifiedEvents = response.data.data.map(function (event) {
                 return {
@@ -21046,12 +21063,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/store-booking", _this3.formData);
             case 8:
               response = _context2.sent;
-              console.log("code check ka", response.data.code);
               // Check the response status instead of directly accessing `response.code`
               if (response.data.code === 200) {
                 _this3.message = response.data.message;
                 _this3.showToaster(_this3.message);
-                _this3.fetchMeetingData();
+                // this.fetchMeetingData();
+                console.log(_this3.fetchMeetingData());
                 _this3.eventmodal = false;
               } else if (response.data.code === 404) {
                 _this3.formsbuttons = true;
@@ -21059,20 +21076,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
                 _this3.message = response.data.message;
                 _this3.showToaster(_this3.message);
               }
-              _context2.next = 17;
+              _context2.next = 16;
               break;
-            case 13:
-              _context2.prev = 13;
+            case 12:
+              _context2.prev = 12;
               _context2.t0 = _context2["catch"](0);
               // this.eventmodal = false;
               _this3.isSubmitting = false;
               _this3.showToaster("something went wrong try again!.");
               // console.log("Error submitting booking:", error);
-            case 17:
+            case 16:
             case "end":
               return _context2.stop();
           }
-        }, _callee2, null, [[0, 13]]);
+        }, _callee2, null, [[0, 12]]);
       }))();
     },
     showToaster: function showToaster(message) {
@@ -21130,13 +21147,16 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
   mounted: function mounted() {
     var _this5 = this;
     // Check if access code is stored in localStorage
-    // const accessCode = localStorage.getItem('accessCode');
-    // if (!accessCode) {
-    //     // Redirect to the login page
-    //     this.$router.push({ name: 'Login' });
-    //     return;
-    // }
-    this.fetchMeetingData(); // Call fetchMeetingData directly
+    var accessCode = localStorage.getItem('accessCode');
+    var storedDate = localStorage.getItem('currentDate');
+    var currentDate = new Date().toLocaleDateString();
+    if (storedDate !== currentDate || !accessCode) {
+      // Redirect to the login page
+      this.$router.push({
+        name: 'Login'
+      });
+    }
+    this.fetchMeetingData();
     var prevButton = document.querySelector('.fc-prev-button');
     var nextButton = document.querySelector('.fc-next-button');
     var todayButton = document.querySelector('.fc-today-button');
@@ -21203,7 +21223,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     localStorage.removeItem('accessCode');
     var checkAccessCode = /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var response, _response$data;
+        var response, _response$data, currentDate;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -21216,7 +21236,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               response = _context.sent;
               console.log(response.data.valid);
               if (response.data.valid) {
+                // store access token into local storage
                 localStorage.setItem('accessCode', (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.accessCode);
+                // set the current date into local storage
+                currentDate = new Date().toLocaleDateString();
+                localStorage.setItem('currentDate', currentDate);
                 router.replace({
                   name: "Booking"
                 });
