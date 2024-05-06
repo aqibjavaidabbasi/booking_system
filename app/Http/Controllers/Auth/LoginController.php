@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-
-class LoginController extends Controller
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;class LoginController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
@@ -32,8 +33,27 @@ class LoginController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('guest')->except('logout');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('guest')->except('logout');
+    // }
+     public function login(Request $request)
+     {
+
+        // Validate the login request
+        $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        ]);
+
+        // Attempt to log the user in
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        // Authentication passed, redirect to the admin dashboard
+        return redirect()->route('dashboard');
+        }
+
+        // Authentication failed, redirect back with error
+        return redirect()->route('login')->with('error', 'Invalid credentials');
+     }
+
 }

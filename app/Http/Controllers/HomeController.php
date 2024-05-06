@@ -25,7 +25,6 @@ class HomeController extends Controller
     public function index()
     {
 
-
         $users = User::whereHas('roles', function ($query) {
         $query->where('name', 'user');
         })->get();

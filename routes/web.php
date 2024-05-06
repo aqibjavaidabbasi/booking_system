@@ -7,6 +7,7 @@ use App\Http\Controllers\MeetingRoomController;
 use App\Http\Controllers\AvailabilitySlotController;
 use App\Http\Controllers\BookingMeetingController;
 use App\Http\Controllers\AddNotificationEmailController;
+use App\Http\Controllers\Auth\LoginController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,11 +19,11 @@ use App\Http\Controllers\AddNotificationEmailController;
 |
 */
 
-Route::get('/admin-login', function () {
+Route::match(['get', 'post'], '/admin-login', function () {
 return view('auth.login');
 })->name('login');
 
-// Auth::routes();
+Route::post('/custom-login', [LoginController::class, 'login'])->name('login.custom');
 Route::get('/logout', [HomeController::class, 'logout'])->name('logout');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::group(

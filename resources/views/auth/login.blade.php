@@ -38,10 +38,8 @@
                                     <!-- <p class="text-muted">Sign in to continue to Velzon.</p> -->
                                 </div>
                                 <div class="p-2 mt-4">
-                                    <form method="POST" action="{{ route('login') }}">
+                                    <form method="POST" action="{{ route('login.custom') }}">
                                         @csrf
-
-
                                         <div class="mb-3">
                                             <label for="username" class="form-label">Email</label>
                                             <input type="email"
